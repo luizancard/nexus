@@ -15,8 +15,12 @@ __pycache__/
 # OS metadata
 .DS_Store
 
+# secrets
+.env
+
 # generated geodata and rasters
 data_files/
+cache/
 
 
 .github/agents

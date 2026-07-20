@@ -11,6 +11,7 @@ import argparse
 import csv
 import hashlib
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
@@ -28,30 +29,52 @@ ACCESSIBILITY_CLASSES: list[str] = [
     "surface_obstacle",
 ]
 
-# Mapillary semantic labels to Nexus accessibility classes.
-# Labels can be extended as your final Mapillary taxonomy is validated.
+# Mapillary Vistas v1.2 semantic labels (verified against the real 65-class
+# id2label of facebook/mask2former-swin-large-mapillary-vistas-semantic) to
+# Nexus accessibility classes. Keys are pre-normalized -- see
+# `_normalize_label` -- so multi-word/punctuated Vistas names like
+# "Crosswalk - Plain" or "Traffic Sign (Back)" match correctly.
 MAPILLARY_TO_ACCESSIBILITY: dict[str, str] = {
+    # street / road surface
     "road": "street",
-    "lane-marking": "street",
+    "service-lane": "street",
     "bike-lane": "street",
+    "lane-marking-general": "street",
+    # sidewalk / pedestrian-exclusive ground
     "sidewalk": "sidewalk",
+    "pedestrian-area": "sidewalk",
+    # curb + curb ramps
     "curb": "curb",
     "curb-cut": "ramp",
-    "crosswalk-zebra": "crossing",
+    # crossings
     "crosswalk-plain": "crossing",
-    "stair": "steps",
-    "stairs": "steps",
-    "ramp": "ramp",
-    "handrail": "handrail",
-    "guard-rail": "handrail",
-    "tactile-paving": "tactile_paving",
+    "lane-marking-crosswalk": "crossing",
+    # lighting -- approximate: Street Light is a direct match; Utility Pole is
+    # a weaker proxy (common in Brazilian streetscapes to carry light
+    # fixtures, but not guaranteed). Generic "Pole", traffic signals, and
+    # traffic signs are deliberately excluded to avoid diluting this signal.
     "street-light": "lighting",
-    "pole": "lighting",
+    "utility-pole": "lighting",
+    # fixed street-furniture obstructions -- real, literature-documented
+    # accessibility complaints: these narrow already-tight sidewalks
+    "bench": "surface_obstacle",
+    "bike-rack": "surface_obstacle",
+    "fire-hydrant": "surface_obstacle",
+    "mailbox": "surface_obstacle",
     "manhole": "surface_obstacle",
+    "phone-booth": "surface_obstacle",
     "pothole": "surface_obstacle",
-    "obstacle": "surface_obstacle",
-    "debris": "surface_obstacle",
+    "trash-can": "surface_obstacle",
+    "barrier": "surface_obstacle",
 }
+# `steps`, `handrail`, and `tactile_paving` are deliberately absent: Mapillary
+# Vistas v1.2 (the taxonomy this pretrained checkpoint was trained on) has no
+# equivalent class for any of them -- confirmed against the full 65-class
+# list. Note "Guard Rail" is intentionally NOT mapped to `handrail` despite
+# superficial name similarity: Vistas' Guard Rail is a roadside vehicle
+# barrier, not pedestrian stair/ramp support, and conflating them would
+# fabricate a false accessibility-positive signal. These 3 gap classes stay
+# genuinely undetected until the stretch-goal fine-tune (see README).
 
 # Higher value = stronger negative impact for mobility-impaired users.
 BARRIER_WEIGHTS: dict[str, float] = {
@@ -95,6 +118,7 @@ class MapillaryImageEntry:
     longitude: float
     city: str
     split: str
+    compass_angle: float | None = None
 
 
 @dataclass(frozen=True)
@@ -153,6 +177,8 @@ def parse_mapillary_metadata(
                 latitude = float(_required_field(row, ["latitude", "lat"]))
                 longitude = float(_required_field(row, ["longitude", "lon", "lng"]))
                 city = row.get("city", "").strip()
+                compass_raw = row.get("compass_angle", "").strip()
+                compass_angle = float(compass_raw) if compass_raw else None
             except Exception as exc:
                 raise ValueError(f"Invalid metadata row {row_index}: {exc}") from exc
 
@@ -168,6 +194,7 @@ def parse_mapillary_metadata(
                     longitude=longitude,
                     city=city,
                     split=split,
+                    compass_angle=compass_angle,
                 )
             )
 
@@ -251,10 +278,22 @@ def write_yolo_dataset_yaml(
     output_yaml.write_text(content, encoding="utf-8")
 
 
+def _normalize_label(raw_label: str) -> str:
+    """Normalize a raw Vistas class name into a lookup key.
+
+    Collapses any run of whitespace/punctuation into a single hyphen (e.g.
+    "Crosswalk - Plain" -> "crosswalk-plain", "Traffic Sign (Back)" ->
+    "traffic-sign-back"). A plain `.replace(" ", "-")` would leave stray
+    repeated hyphens on every multi-word Vistas name that also contains its
+    own hyphen, silently breaking the lookup for exactly the classes this
+    remap depends on.
+    """
+    return re.sub(r"[^a-z0-9]+", "-", raw_label.strip().lower()).strip("-")
+
+
 def remap_mapillary_label(raw_label: str) -> str | None:
-    """Convert a raw Mapillary label into the Nexus class taxonomy."""
-    normalized = raw_label.strip().lower().replace(" ", "-")
-    return MAPILLARY_TO_ACCESSIBILITY.get(normalized)
+    """Convert a raw Mapillary/Vistas label into the Nexus class taxonomy."""
+    return MAPILLARY_TO_ACCESSIBILITY.get(_normalize_label(raw_label))
 
 
 def polygon_area(points: list[tuple[float, float]]) -> float:

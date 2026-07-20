@@ -2,3 +2,14 @@ osmnx
 networkx
 geopandas
 rasterio
+
+# semantic segmentation + geometric attribute extraction (Mapillary pipeline)
+torch
+torchvision
+transformers
+accelerate
+pillow
+opencv-python-headless
+requests
+pyproj
+python-dotenv
