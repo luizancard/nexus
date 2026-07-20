@@ -12,6 +12,16 @@ developer docs):
     - Pagination only works when filtering by `creator_username`; a plain bbox
       query caps at `limit=2000` with no next page, so tiles must stay small
       enough that no single one approaches that cap.
+
+Empirical finding, not documented by Mapillary: tile density affects total
+results even for tiles well under the 2000-result cap -- a coarse 4-tile
+fetch of Lourdes returned 6,579 unique images; the same area at 16 tiles
+(the DEFAULT_TILE_DEGREES below) returned 22,943. Something in Mapillary's
+bbox search appears to thin/sample results in a way that scales with query
+area, not just result count. See docs/METHODOLOGY.md Section 3.1 for the
+full comparison. This is why DEFAULT_TILE_DEGREES is set well below the
+API's own 0.01 limit -- not just as a boundary safety margin, but because
+the coarser end of the legal range silently under-collects data.
 """
 
 from __future__ import annotations
@@ -31,8 +41,12 @@ from data_pipeline.spatial_utils import batch_to_dem_crs
 
 GRAPH_API_URL = "https://graph.mapillary.com/images"
 MAX_TILE_DEGREES = 0.01
-DEFAULT_TILE_DEGREES = 0.009  # safety margin under the 0.01 hard limit
+# 0.004, not just-under-0.01: the validated operating point from real testing
+# (see module docstring) -- a coarser tile size legally satisfies the API's
+# bbox limit but silently returns far fewer images per unit area.
+DEFAULT_TILE_DEGREES = 0.004
 NEAR_CAP_WARNING_THRESHOLD = 1800  # warn well before the 2000-result API cap
+REQUEST_LIMIT = 2000  # Mapillary's documented max `limit` value per request
 REQUEST_FIELDS = "id,captured_at,compass_angle,camera_type,geometry,thumb_1024_url"
 
 
@@ -122,7 +136,7 @@ def fetch_images_in_tile(
         "access_token": access_token,
         "fields": REQUEST_FIELDS,
         "bbox": f"{min_lon},{min_lat},{max_lon},{max_lat}",
-        "limit": 2000,
+        "limit": REQUEST_LIMIT,
     }
     response = http.get(GRAPH_API_URL, params=params, timeout=30)
     response.raise_for_status()
@@ -131,7 +145,7 @@ def fetch_images_in_tile(
     if len(images) >= NEAR_CAP_WARNING_THRESHOLD:
         print(
             f"      [WARNING] Tile {bbox} returned {len(images)} images, "
-            f"near the API's 2000 cap -- results may be truncated. "
+            f"near the API's {REQUEST_LIMIT} cap -- results may be truncated. "
             "Reduce cell_size_deg and re-run."
         )
     return images

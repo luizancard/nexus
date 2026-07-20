@@ -78,11 +78,26 @@ def segment_image(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Run one image through the model and return (class_map, confidence_map).
 
-    Replicates the same query-fusion HF's own `post_process_semantic_segmentation`
+    Uses the same query-fusion HF's own `post_process_semantic_segmentation`
     uses internally (softmax class probs per query x sigmoid mask probs per
     query, summed over queries), but keeps the per-pixel max *value* alongside
     the argmax *class* -- the convenience post-processing method only returns
     the class map and discards the confidence, which we need per detection.
+
+    This is NOT a byte-identical replication, and that's been verified, not
+    just assumed: HF's method interpolates `masks_queries_logits` to the
+    model's fixed 384x384 preprocessing size *before* the query-fusion
+    einsum, then interpolates the fused result a second time to the target
+    size. This function does the einsum first, at native mask-query
+    resolution, and interpolates once directly to the original image size.
+    Compared directly against `processor.post_process_semantic_segmentation`
+    on a real Lourdes image, this disagrees on 1.38% of pixels -- concentrated
+    at class-transition boundaries (80.8% of disagreeing pixels are on a
+    boundary, ~20x their 4.1% share of the image). That matters concretely
+    because `estimate_width_bucket` samples a mask's bottom *edge* -- exactly
+    where this discrepancy concentrates -- compounding on top of the
+    already-documented FOV-calibration bias that excluded width_bucket from
+    the canonical schema (see docs/METHODOLOGY.md).
 
     Returns:
         class_map: (H, W) int array of predicted Vistas class ids, at the

@@ -28,17 +28,14 @@ from pathlib import Path
 from typing import Any
 
 from data_pipeline.geometric_attribute_extractor import (
+    WIDTH_BUCKET_ORDER,
     WIDTH_BUCKET_THRESHOLDS_M,
+    bottom_band_points,
     estimate_width_bucket,
 )
 
 ASSUMED_CURB_HEIGHT_M = 0.15
-
-
-def _bottom_band(polygon_xy: list[tuple[float, float]], image_height_px: int) -> list[tuple[float, float]]:
-    bottom_y = max(p[1] for p in polygon_xy)
-    band = [p for p in polygon_xy if bottom_y - p[1] <= max(2.0, 0.02 * image_height_px)]
-    return band if len(band) >= 2 else polygon_xy
+MIN_CURB_HEIGHT_PX = 2  # below this, the curb mask is too thin/noisy to use as a scale reference
 
 
 def estimate_width_via_curb_reference(
@@ -61,11 +58,11 @@ def estimate_width_via_curb_reference(
     """
     curb_ys = [p[1] for p in curb_polygon]
     curb_height_px = max(curb_ys) - min(curb_ys)
-    if curb_height_px < 2:
+    if curb_height_px < MIN_CURB_HEIGHT_PX:
         return None
 
     meters_per_px = assumed_curb_height_m / curb_height_px
-    band = _bottom_band(sidewalk_polygon, image_height_px)
+    band = bottom_band_points(sidewalk_polygon, image_height_px)
     xs = [p[0] for p in band]
     width_m = (max(xs) - min(xs)) * meters_per_px
 
@@ -89,8 +86,7 @@ def compare_methods(predictions_json: Path) -> dict[str, Any]:
     """
     results = json.loads(predictions_json.read_text(encoding="utf-8"))
 
-    buckets = ["under_50cm", "50_to_90cm", "over_90cm"]
-    confusion = {b1: {b2: 0 for b2 in buckets} for b1 in buckets}
+    confusion = {b1: {b2: 0 for b2 in WIDTH_BUCKET_ORDER} for b1 in WIDTH_BUCKET_ORDER}
     n_compared = 0
     n_eligible = 0
 
@@ -108,7 +104,7 @@ def compare_methods(predictions_json: Path) -> dict[str, Any]:
         n_compared += 1
         confusion[primary][reference] += 1
 
-    agree = sum(confusion[b][b] for b in buckets)
+    agree = sum(confusion[b][b] for b in WIDTH_BUCKET_ORDER)
     summary = {
         "n_images_with_both_sidewalk_and_curb": n_eligible,
         "n_images_both_methods_produced_estimate": n_compared,

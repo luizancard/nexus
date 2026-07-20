@@ -2,6 +2,8 @@ osmnx
 networkx
 geopandas
 rasterio
+scipy
+numpy
 
 # semantic segmentation + geometric attribute extraction (Mapillary pipeline)
 torch

@@ -35,6 +35,7 @@ whatever the eventual cost function turns out to be.
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 ABSENT = "absent"
@@ -64,18 +65,40 @@ IMPUTATION_POLICY: dict[str, dict[str, Any]] = {
     },
     "width_bucket": {
         "category": "graded",
+        # Intentionally a local literal, not imported from
+        # geometric_attribute_extractor.WIDTH_BUCKET_ORDER: this module is
+        # designed to be a generic, standalone policy table with no
+        # dependency on the heavier rasterio/numpy-based geometric module,
+        # even though the values happen to coincide today.
         "tiers": ["under_50cm", "50_to_90cm", "over_90cm"],
         "unknown_default": "50_to_90cm",
     },
 }
 
 
+def _is_missing(value: Any) -> bool:
+    """True if `value` should be treated as not-yet-known.
+
+    Every current call site (OSM tag extraction, segmentation fusion) only
+    ever passes `None`/`"unknown"`/a clean string literal, never a raw
+    `NaN` -- but this module is meant to be a generic, reusable policy
+    table, and a future caller feeding it a raw pandas/GeoDataFrame row
+    directly (very plausible given how pandas-heavy the rest of this
+    pipeline is) could easily pass a float NaN. `nan == "unknown"` and
+    `nan is None` are both False, so without this explicit check a NaN
+    would silently pass through as if it were a legitimate measured value.
+    """
+    if value is None or value == UNKNOWN:
+        return True
+    return isinstance(value, float) and math.isnan(value)
+
+
 def impute_missing_attributes(known: dict[str, Any]) -> dict[str, Any]:
     """Fill in missing accessibility attributes per the pessimistic policy.
 
-    A value counts as "missing" if the key is absent from `known` or its
-    value is `None` or the literal string "unknown" -- callers upstream
-    (OSM tag extraction, segmentation fusion) are expected to pass exactly
+    A value counts as "missing" if the key is absent from `known`, its
+    value is `None`/NaN, or the literal string "unknown" -- callers
+    upstream (OSM tag extraction, segmentation fusion) are expected to pass
     one of those for anything they could not determine.
 
     Args:
@@ -91,7 +114,7 @@ def impute_missing_attributes(known: dict[str, Any]) -> dict[str, Any]:
     result = dict(known)
     for attr, policy in IMPUTATION_POLICY.items():
         value = result.get(attr)
-        was_missing = value is None or value == UNKNOWN
+        was_missing = _is_missing(value)
         if was_missing:
             result[attr] = policy["unknown_default"]
         result[f"{attr}_imputed"] = was_missing

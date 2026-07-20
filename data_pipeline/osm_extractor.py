@@ -19,6 +19,35 @@ TAGS_ACESSIBILIDADE_NODE = [
     "crossing", "tactile_paving", "kerb", "barrier", "wheelchair", "highway",
 ]
 
+# Sanity bound for raw DEM elevation samples -- same defensive pattern
+# geometric_attribute_extractor.MAX_PLAUSIBLE_SLOPE_PCT cites this line as
+# following. Anything outside this range gets treated as NoData rather than
+# a real elevation. Note this bound would NOT have caught the all-zero-DEM
+# bug found and fixed this session (0.0 is inside the range) -- it guards
+# against a different failure mode (wild out-of-range values), not silent
+# uniform-zero data; that class of bug is now caught by validate_dem.py's
+# mean-altitude sanity check instead.
+ELEVATION_MIN_PLAUSIBLE_M = 0
+ELEVATION_MAX_PLAUSIBLE_M = 3000
+
+
+def highway_values(raw: str | list[str] | None) -> list[str]:
+    """Normalize an edge's `highway` tag into a list of values.
+
+    OSMnx's `simplify=True` (used in `extrair_malha_pedestres`) merges
+    consecutive original OSM way segments into one edge; when the segments
+    disagree on a tag, OSMnx stores it as a *list* instead of a scalar
+    string. Comparing a list to a string with `==`/`in` silently and always
+    fails. This is not theoretical: 8 real edges in the Lourdes graph carry
+    `highway=['steps', 'footway']`-style lists, and a naive
+    `data.get('highway') == 'steps'` check misses every one of them --
+    exactly the failure mode that made this project's own methodology doc
+    wrongly claim "OSM has no signal on stairs here" when OSM actually did.
+    """
+    if raw is None:
+        return []
+    return raw if isinstance(raw, list) else [raw]
+
 
 def extrair_malha_pedestres(lugar: str) -> nx.MultiDiGraph:
     """
@@ -67,7 +96,7 @@ def diagnosticar_cobertura_tags(G: nx.MultiDiGraph) -> dict[str, float]:
         cobertura[tag] = round(100.0 * presentes / total_arestas, 2)
 
     tem_steps = sum(
-        1 for _, _, data in G.edges(data=True) if data.get("highway") == "steps"
+        1 for _, _, data in G.edges(data=True) if "steps" in highway_values(data.get("highway"))
     )
     cobertura["highway=steps (contagem)"] = tem_steps
 
@@ -122,7 +151,7 @@ def injetar_topografia_e_calcular_esforco(G: nx.MultiDiGraph, caminho_dem: str) 
             if nodata is not None and math.isclose(valor_z, nodata, rel_tol=1e-5):
                 data['elevation'] = np.nan
                 nos_fora_do_raster += 1
-            elif valor_z < 0 or valor_z > 3000: # Heurística de segurança para anomalias
+            elif valor_z < ELEVATION_MIN_PLAUSIBLE_M or valor_z > ELEVATION_MAX_PLAUSIBLE_M: # Heurística de segurança para anomalias
                 data['elevation'] = np.nan
                 nos_fora_do_raster += 1
             else:

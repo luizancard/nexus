@@ -48,6 +48,10 @@ ASSUMED_CAMERA_HEIGHT_M = 1.5
 ASSUMED_VERTICAL_FOV_DEG = 65.0
 
 WIDTH_BUCKET_THRESHOLDS_M = (0.5, 0.9)  # matches the cost formula's own <50cm rule
+# Canonical narrowest-to-widest order, shared by every module that ranks or
+# compares width buckets (pessimistic aggregation, imputation tiers, cross-
+# method validation) -- one definition so they can't silently drift apart.
+WIDTH_BUCKET_ORDER = ["under_50cm", "50_to_90cm", "over_90cm"]
 SLOPE_NODATA = -9999.0
 # Sanity bound, same defensive pattern osm_extractor.py already uses for
 # elevation (< 0 or > 3000m -> NaN). Empirically, 99.8% of interpolated
@@ -91,6 +95,32 @@ def _ground_distance_m(
     return camera_height_m / math.tan(angle_below_horizon)
 
 
+def bottom_band_points(
+    polygon_xy: list[tuple[float, float]], image_height_px: int
+) -> list[tuple[float, float]]:
+    """Points within a thin band of a mask polygon's bottom-most edge.
+
+    Closest to the camera -> largest, most scale-stable region to measure a
+    pixel span from -- avoids the overall bbox width, which perspective can
+    make misleading for a tapering mask. Shared by `estimate_width_bucket`
+    and `scripts/validate_geometric_heuristics.py`'s independent curb-
+    reference method, so both measure the same region of a mask.
+
+    Args:
+        polygon_xy: Mask polygon in original image pixel coordinates.
+        image_height_px: Full image height in pixels.
+
+    Returns:
+        The bottom-band subset of `polygon_xy`, or the full polygon if the
+        band is degenerate (fewer than 2 points).
+    """
+    if not polygon_xy:
+        return []
+    bottom_y = max(p[1] for p in polygon_xy)
+    band = [p for p in polygon_xy if bottom_y - p[1] <= max(2.0, 0.02 * image_height_px)]
+    return band if len(band) >= 2 else polygon_xy
+
+
 def estimate_width_bucket(
     polygon_xy: list[tuple[float, float]], image_width_px: int, image_height_px: int
 ) -> str | None:
@@ -113,13 +143,8 @@ def estimate_width_bucket(
     if len(polygon_xy) < 3:
         return None
 
-    ys = [p[1] for p in polygon_xy]
-    bottom_y = max(ys)
-    # points within a thin band of the bottom edge -- avoids the overall
-    # bbox width, which perspective can make misleading for a tapering mask
-    band = [p for p in polygon_xy if bottom_y - p[1] <= max(2.0, 0.02 * image_height_px)]
-    if len(band) < 2:
-        band = polygon_xy
+    bottom_y = max(p[1] for p in polygon_xy)
+    band = bottom_band_points(polygon_xy, image_height_px)
     xs = [p[0] for p in band]
 
     distance_m = _ground_distance_m(bottom_y, image_height_px)
@@ -240,8 +265,15 @@ def extract_geometric_attributes(
             `generate_slope_raster`); ramp declivity is skipped if omitted.
 
     Returns:
-        `{"width_bucket": ..., "ramp_declivity_pct": ..., "ramp_compliance": ...}`,
-        any key omitted if it could not be estimated.
+        `{"width_bucket_uncalibrated_estimate": ..., "ramp_declivity_pct": ...,
+        "ramp_compliance": ...}`, any key omitted if it could not be
+        estimated. Deliberately NOT named `"width_bucket"` -- that's the
+        canonical, trusted schema key used everywhere else in the pipeline,
+        and this estimate is known to carry a systematic bias (see
+        docs/METHODOLOGY.md Section 3.4) that keeps it out of that schema.
+        A caller merging this dict straight into canonical attributes would
+        silently reintroduce that bias; using a different key name makes
+        that mistake harder to make by accident.
     """
     attributes: dict[str, Any] = {}
     width_px = image_result["image_width"]
@@ -255,8 +287,7 @@ def extract_geometric_attributes(
     sidewalk_widths = [w for w in sidewalk_widths if w is not None]
     if sidewalk_widths:
         # pessimistic aggregation within a single image too: narrowest observed wins
-        order = ["under_50cm", "50_to_90cm", "over_90cm"]
-        attributes["width_bucket"] = min(sidewalk_widths, key=order.index)
+        attributes["width_bucket_uncalibrated_estimate"] = min(sidewalk_widths, key=WIDTH_BUCKET_ORDER.index)
 
     has_ramp_feature = any(det["class_name"] == "Curb Cut" for det in image_result["detections"])
     if has_ramp_feature and slope_raster_path is not None:
