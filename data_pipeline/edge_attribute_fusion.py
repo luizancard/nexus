@@ -95,6 +95,32 @@ OSM_SMOOTHNESS_TO_TIER = {
     "bad": "poor", "very_bad": "poor", "horrible": "poor",
     "very_horrible": "poor", "impassable": "poor",
 }
+TIER_ORDER = ["poor", "fair", "good"]  # worst-first, for pessimistic selection
+
+
+def _tag_values(raw: Any) -> list[Any]:
+    """Normalize any OSM tag value into a list, exactly like
+    `osm_extractor.highway_values` does for `highway`: OSMnx's simplify=True
+    merges consecutive way segments and stores disagreeing tags as a *list*.
+    The Lourdes graph has 12 real list-valued `highway` edges today; the same
+    merge can produce a list for `surface`/`smoothness`/`kerb`/etc. after any
+    future OSM edit + weekly refresh. Before this helper existed,
+    `surface in OSM_SURFACE_TO_TIER` raised TypeError (lists are unhashable)
+    on such an edge -- killing the whole fusion run -- and the scalar `==`
+    comparisons for tactile_paving/kerb/handrail silently dropped the evidence.
+    """
+    if raw is None:
+        return []
+    return raw if isinstance(raw, list) else [raw]
+
+
+def _first_tag(*raws: Any) -> Any | None:
+    """First non-empty tag value across edge/node candidates, preserving the
+    edge > node-u > node-v priority the scalar `or`-chain used to encode."""
+    for raw in raws:
+        if _tag_values(raw):
+            return raw
+    return None
 
 
 def osm_tags_to_canonical(
@@ -128,40 +154,53 @@ def osm_tags_to_canonical(
 
     canonical: dict[str, Any] = {}
 
-    surface = edge_data.get("surface")
-    if surface in OSM_SURFACE_TO_TIER:
-        canonical["surface_material_tier"] = OSM_SURFACE_TO_TIER[surface]
+    # Every tag below goes through _tag_values so a list-valued tag (OSMnx's
+    # merged-segment representation, see the helper's docstring) is handled;
+    # when merged segments disagree, the pessimistic value wins -- the same
+    # worst-case-wins rule `aggregate_image_evidence` applies to imagery.
+    surface_tiers = [
+        OSM_SURFACE_TO_TIER[s] for s in _tag_values(edge_data.get("surface")) if s in OSM_SURFACE_TO_TIER
+    ]
+    if surface_tiers:
+        canonical["surface_material_tier"] = min(surface_tiers, key=TIER_ORDER.index)
 
-    smoothness = edge_data.get("smoothness")
-    if smoothness in OSM_SMOOTHNESS_TO_TIER:
-        canonical["smoothness_tier"] = OSM_SMOOTHNESS_TO_TIER[smoothness]
+    smoothness_tiers = [
+        OSM_SMOOTHNESS_TO_TIER[s] for s in _tag_values(edge_data.get("smoothness")) if s in OSM_SMOOTHNESS_TO_TIER
+    ]
+    if smoothness_tiers:
+        canonical["smoothness_tier"] = min(smoothness_tiers, key=TIER_ORDER.index)
 
-    width = edge_data.get("width")
-    if width is not None:
+    widths_m = []
+    for width in _tag_values(edge_data.get("width")):
         try:
-            width_m = float(width)
-            canonical["width_bucket"] = (
-                "under_50cm" if width_m < 0.5 else "50_to_90cm" if width_m < 0.9 else "over_90cm"
-            )
+            widths_m.append(float(width))
         except (TypeError, ValueError):
             pass  # non-numeric width tag (e.g. "narrow") -- not a value we can bucket
+    if widths_m:
+        width_m = min(widths_m)  # pessimistic: narrowest merged segment wins
+        canonical["width_bucket"] = (
+            "under_50cm" if width_m < 0.5 else "50_to_90cm" if width_m < 0.9 else "over_90cm"
+        )
 
-    tactile = edge_data.get("tactile_paving") or node_u_data.get("tactile_paving") or node_v_data.get("tactile_paving")
-    if tactile == "yes":
-        canonical["tactile_paving_present"] = PRESENT
-    elif tactile == "no":
+    tactile = _tag_values(
+        _first_tag(edge_data.get("tactile_paving"), node_u_data.get("tactile_paving"), node_v_data.get("tactile_paving"))
+    )
+    if "no" in tactile:  # pessimistic: any merged segment without it -> not fully present
         canonical["tactile_paving_present"] = ABSENT
+    elif "yes" in tactile:
+        canonical["tactile_paving_present"] = PRESENT
 
-    if edge_data.get("handrail") == "yes":
-        canonical["handrail_present"] = PRESENT
-    elif edge_data.get("handrail") == "no":
+    handrail = _tag_values(edge_data.get("handrail"))
+    if "no" in handrail:
         canonical["handrail_present"] = ABSENT
+    elif "yes" in handrail:
+        canonical["handrail_present"] = PRESENT
 
-    kerb = edge_data.get("kerb") or node_u_data.get("kerb") or node_v_data.get("kerb")
-    if kerb in ("lowered", "flush"):
-        canonical["ramp_present"] = PRESENT
-    elif kerb == "raised":
+    kerb = _tag_values(_first_tag(edge_data.get("kerb"), node_u_data.get("kerb"), node_v_data.get("kerb")))
+    if "raised" in kerb:  # pessimistic: a raised kerb anywhere along the edge blocks it
         canonical["ramp_present"] = ABSENT
+    elif any(k in ("lowered", "flush") for k in kerb):
+        canonical["ramp_present"] = PRESENT
 
     if (
         edge_data.get("crossing") is not None
@@ -193,17 +232,47 @@ def osm_tags_to_canonical(
     return canonical
 
 
+# An image farther than this from its nearest edge is discarded, not snapped.
+# The Mapillary fetch covers the *rectangular* geocoded bbox of Lourdes, but
+# the graph covers the neighborhood polygon -- measured on the real dataset,
+# the snap-distance distribution is bimodal: 2,179/3,689 images within 25m
+# (on-graph streets: GPS error plus half a street width from the edge
+# centerline), a thin trough at 25-50m (233 images), then a second population
+# of 1,277 images at 50-501m, 83% of which lie outside the graph's convex
+# hull entirely -- photos of *other neighborhoods'* streets inside the bbox
+# corners. Without this cutoff those far images attached their detections to
+# whatever boundary edge happened to be nearest (81 edges received evidence
+# from >50m away), fabricating attribute evidence from streets the edge
+# doesn't represent. 25m sits in the measured trough between the two
+# populations.
+MAX_SNAP_DISTANCE_M = 25.0
+
+
 def snap_images_to_edges(
-    graph: nx.MultiDiGraph, entries: list[MapillaryImageEntry]
+    graph: nx.MultiDiGraph,
+    entries: list[MapillaryImageEntry],
+    max_snap_distance_m: float = MAX_SNAP_DISTANCE_M,
 ) -> dict[tuple[Any, Any, int], list[MapillaryImageEntry]]:
     """Assign each Mapillary image to its nearest graph edge.
+
+    An image only counts if its nearest edge is within `max_snap_distance_m`
+    (see that constant's rationale). Because street-level evidence describes
+    the physical street segment, not a direction of travel, every image list
+    is mirrored onto the reverse twin edge (v, u, key) when it exists --
+    OSMnx's walk network stores each two-way segment as two directed edges
+    with identical geometry, and `ox.distance.nearest_edges` arbitrarily
+    returns only one of the two equidistant twins. Without mirroring, the
+    same physical segment reported e.g. "obstacle present" in one walking
+    direction and "unknown" in the other (measured on the real fused graph:
+    245 of 416 twin pairs disagreed on n_images_observed).
 
     Args:
         graph: Projected graph (see `osm_extractor.injetar_topografia_e_calcular_esforco`).
         entries: Manifest entries with `latitude`/`longitude` in WGS84.
+        max_snap_distance_m: Maximum image-to-edge distance for a valid snap.
 
     Returns:
-        edge_id (u, v, key) -> list of entries snapped to that edge.
+        edge_id (u, v, key) -> list of entries snapped to that edge (or its twin).
     """
     graph_crs = graph.graph.get("crs")
     xs, ys = [], []
@@ -212,11 +281,27 @@ def snap_images_to_edges(
         xs.append(x)
         ys.append(y)
 
-    nearest = ox.distance.nearest_edges(graph, X=xs, Y=ys)
+    nearest, distances = ox.distance.nearest_edges(graph, X=xs, Y=ys, return_dist=True)
     assignment: dict[tuple[Any, Any, int], list[MapillaryImageEntry]] = {}
-    for entry, edge_id in zip(entries, nearest):
+    n_discarded = 0
+    for entry, edge_id, distance in zip(entries, nearest, distances):
+        if distance > max_snap_distance_m:
+            n_discarded += 1
+            continue
         assignment.setdefault(edge_id, []).append(entry)
-    return assignment
+    if n_discarded:
+        print(
+            f"      [INFO] Discarded {n_discarded}/{len(entries)} image(s) farther than "
+            f"{max_snap_distance_m}m from any graph edge (outside-neighborhood imagery)."
+        )
+
+    mirrored: dict[tuple[Any, Any, int], list[MapillaryImageEntry]] = {}
+    for edge_id, edge_entries in assignment.items():
+        u, v, key = edge_id
+        mirrored.setdefault(edge_id, []).extend(edge_entries)
+        if graph.has_edge(v, u, key):
+            mirrored.setdefault((v, u, key), []).extend(edge_entries)
+    return mirrored
 
 
 def aggregate_image_evidence(

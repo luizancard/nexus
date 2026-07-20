@@ -367,7 +367,10 @@ using the "obvious" name. The canonical `width_bucket` falls through to OSM
 (0% tag coverage for `width`) and then to imputation's neutral default, so
 100% of edges honestly report `width_bucket_imputed = True` rather than a
 confidently wrong distribution. The raw estimate is preserved (present on
-428 edges) so the recalibration work isn't lost, just not trusted yet. An
+428 edges at the time of this decision; 504 after the §8 audit's re-fusion,
+where the bias re-measured essentially unchanged at 91.3% `under_50cm` --
+confirming the gate remains warranted) so the recalibration work isn't
+lost, just not trusted yet. An
 honestly-unknown value is safer to route on than a confident wrong one --
 this is the same "Pessimistic Safe Fallback" principle from §4, applied to
 a miscalibration failure mode rather than a coverage gap.
@@ -415,8 +418,9 @@ nodes' tags -- `crossing`/`kerb`/`tactile_paving`/`barrier` are frequently
 node-level in OSM, e.g. at the point a footway meets a road) take priority
 where present; Mapillary imagery (spatially joined via
 `osmnx.distance.nearest_edges`, images snapped to their nearest edge after
-reprojection into the graph's own CRS) fills gaps; `imputation_engine`
-resolves whatever remains. Every edge additionally records `<attr>_source`
+reprojection into the graph's own CRS -- since the §8 audit, only when that
+edge is within 25m, and mirrored onto both directed twins of the segment)
+fills gaps; `imputation_engine` resolves whatever remains. Every edge additionally records `<attr>_source`
 (`"osm"` or `"imagery"`) and `n_images_observed`, so downstream consumers --
 including this document -- can audit exactly where any given value came
 from rather than treating the fused graph as an opaque ground truth.
@@ -429,8 +433,14 @@ Both are reproducible from scratch via `python -m data_pipeline.edge_attribute_f
 (a CLI driver added after an audit noted the fused graph previously had no
 committed way to regenerate it).
 
-**Full run result, all 832 Lourdes edges**: **432/832 edges (52%)** have at
-least one Mapillary image directly snapped to them.
+**Full run result, all 832 Lourdes edges**: **508/832 edges (61.1%)** have at
+least one Mapillary image snapped to them. (An earlier draft reported
+432/832 (52%) -- that number was real but produced by a fusion run that
+both leaked evidence from outside-neighborhood imagery onto 81 boundary
+edges *and* dropped evidence on the unobserved directed twin of every
+observed two-way segment; see §8's findings 1 and 2. The current figure is
+after discarding 1,510 far images and mirroring evidence across twins --
+net coverage went up because mirroring adds more than the discard removes.)
 
 ## 6. OSM vs. imagery: quantifying the core comparison
 
@@ -439,11 +449,11 @@ pipeline run," but "does imagery add real information beyond what OSM
 already provides." For each canonical attribute, where does its real
 (non-imputed) value actually come from:
 
-| Attribute | OSM alone | Imagery alone | Combined | Imputed |
+| Attribute | OSM alone | Imagery (net) | Combined | Imputed |
 |---|---|---|---|---|
-| `ramp_present` | 0.0% | 40.0% | 40.0% | 60.0% |
-| `fixed_obstacle_present` | 0.0% | 39.8% | 39.8% | 60.2% |
-| `marked_crossing_present` | 25.0% | 28.5% | 53.5% | 46.5% |
+| `ramp_present` | 0.0% | 47.1% | 47.1% | 52.9% |
+| `fixed_obstacle_present` | 0.0% | 48.8% | 48.8% | 51.2% |
+| `marked_crossing_present` | 25.0% | 34.4% | 59.4% | 40.6% |
 | `steps_present` | 45.4% | 0.0% | 45.4% | 54.6% |
 | `surface_material_tier` | 58.2% | 0.0% | 58.2% | 41.8% |
 | `tactile_paving_present` | 12.7% | 0.0% | 12.7% | 87.3% |
@@ -451,7 +461,11 @@ already provides." For each canonical attribute, where does its real
 | `handrail_present` | 0.0% | 0.0% | 0.0% | 100.0% |
 | `width_bucket` | 0.0% | 0.0%* | 0.0% | 100.0% |
 
-\* imagery produces a raw estimate for 428 edges, but it is excluded from
+(Imagery percentages here are post-§8-audit values -- the pre-audit table
+showed 40.0%/39.8%/28.5% for the first three rows, computed from a fusion
+run with the two spatial-join defects described in §8.)
+
+\* imagery produces a raw estimate for 504 edges, but it is excluded from
 the canonical schema -- see §3.4's decision gate.
 
 **Reading this honestly, attribute by attribute, not as one blended
@@ -460,10 +474,16 @@ number:**
   imagery.** OSM's `kerb` and `barrier` tags have exactly 0% coverage in
   this graph. Without the Mapillary pipeline, these two safety-relevant
   attributes would not exist at all for any edge in Lourdes.
-- **`marked_crossing_present` roughly doubles**: OSM alone covers 25.0% of
-  edges (via node-level `crossing` tags, 41/278 nodes), imagery covers a
-  different 28.5% -- largely non-overlapping, since combined coverage
-  (53.5%) is close to the sum of the two.
+- **`marked_crossing_present` more than doubles**: OSM alone covers 25.0%
+  of edges (via node-level `crossing` tags, 41/278 nodes); imagery adds a
+  net 34.4 percentage points on edges OSM says nothing about. One
+  precision the earlier draft got wrong: because OSM takes priority in the
+  fusion, the "Imagery (net)" column *by construction* counts only edges
+  where OSM was silent, so Combined always equals the sum of the two
+  columns -- summing to ~the total is not evidence of non-overlap, as the
+  earlier text claimed. Measured independently (§8), imagery actually
+  observes crossings on 46.2% of all edges, overlapping OSM on 11.8% --
+  genuinely complementary, but the overlap is real, not near-zero.
 - **`surface_material_tier`, `smoothness_tier`, `tactile_paving_present`,
   and `steps_present` currently gain nothing from imagery.** The first
   three because no imagery-derived signal for them exists in the current
@@ -499,7 +519,7 @@ against a real sample of origin-destination pairs across Lourdes. Measure
 those that differ, how many avoid a real obstacle/steeper ramp the
 OSM-only version would have missed, and (c) how the estimated cost
 distributions compare. The `ramp_present`/`fixed_obstacle_present` rows
-above -- 0% OSM, ~40% imagery, and both are high-impact terms in the cost
+above -- 0% OSM, ~47-49% imagery, and both are high-impact terms in the cost
 formula (obstacle penalties, not minor tie-breakers) -- are the concrete,
 data-level reason to expect this comparison will show a real, non-trivial
 effect, not just a hopeful guess. But the actual effect size is unmeasured
@@ -589,6 +609,231 @@ every finding here was confirmed by executing real code against the real
 project data, not inferred from inspection. Worth keeping full-pipeline,
 adversarial audits like this as a standing step before any future phase
 change, not a one-time exercise.
+
+### 7.3 Fixed-issue index, for future independent reviewers
+
+Every bug found and fixed in this project to date, in one place, so a new
+reviewer (human or model, and specifically including any future independent
+cross-model audit of this pipeline) can confirm these are actually closed
+rather than re-discovering them from zero. "Verified by" states how each fix
+was confirmed -- all by executing real code against real project data, none
+by inspection alone.
+
+| # | Issue | Where | Verified by |
+|---|---|---|---|
+| 1 | DEM raster entirely empty (all 277M pixels = 0.0) | `data_files/lourdes_dem_1m.tif` (§1) | `validate_dem.py` ALERTA→SUCESSO; a real edge's grade changed 0.00%→0.95% |
+| 2 | `highway=steps` silently undetectable (list-vs-string comparison) | `osm_extractor.py`, `edge_attribute_fusion.py` (§2) | `highway=steps` count measured 0→8 after fix, re-checked against raw OSM tags |
+| 3 | Pedestrian graph never persisted to disk | `osm_extractor.py` (§2) | `salvar_grafo`/`carregar_grafo` round-trip tested |
+| 4 | `MAPILLARY_TO_ACCESSIBILITY` keys didn't match real Vistas class names | `semantic_segmentation_training.py` (§3.2) | Diffed against the checkpoint's real `config.json` id2label |
+| 5 | Naive label normalization broke multi-hyphen class names | `semantic_segmentation_training.py` (§3.2) | Regex normalizer tested against real class strings incl. `"Crosswalk - Plain"` |
+| 6 | False `"guard-rail" -> "handrail"` mapping | `semantic_segmentation_training.py` (§3.2) | Manual review of Vistas class semantics; entry removed |
+| 7 | Per-pixel confidence could exceed 1.0 (observed up to 1.34) | `run_segmentation_inference.py::segment_image` (§3.2) | Full 63,843-detection dataset checked post-fix: range confirmed [0.0003, 1.0] |
+| 8 | Width heuristic systematic bias (90.9% pinned to most extreme bucket) | `geometric_attribute_extractor.py` (§3.4) | Post-fusion distribution check across all 832 edges, cross-checked against dashcam-FOV evidence from visual QA |
+| 9 | Slope raster produced physically-implausible extremes (max 2,418%) | `geometric_attribute_extractor.py::generate_slope_raster` (§3.3) | Full distribution check (median 4.85%, p95 30.94%, 0.44% > 100%) before bounding |
+| 10 | GraphML round-trip silently stringifies typed attributes (`'False'` is truthy) | `edge_attribute_fusion.py` (§7) | Loaded a real saved graph, inspected raw types before/after `load_fused_graph()` |
+| 11 | `osm_tags_to_canonical` only checked edge-level tags, missing node-level `crossing`/`kerb`/`tactile_paving`/`barrier` | `edge_attribute_fusion.py` (§7) | `marked_crossing_present` OSM coverage re-measured 0%→25.0%, `tactile_paving_present` 1.9%→12.7% |
+| 12 | `requirements.txt` missing `scipy`/`numpy` (used directly, only present transitively) | `requirements.txt` (§7) | `pip show scipy`/`numpy` had empty "Required-by" before fix |
+| 13 | `mapillary_client.py` default tile size (0.009°) contradicted the validated 0.004° operating point | `mapillary_client.py` (§7) | Cross-checked against §3.1's own tiling experiment results |
+| 14 | Dead code / duplication cluster: unused `PRESENT` constant, width-tier order duplicated 4x, duplicated "bottom band" pixel helper, unnamed magic numbers, `imputation_engine` NaN gap, no CLI driver for `edge_attribute_fusion.py` | Multiple files (§7) | Each confirmed individually; CLI driver confirmed by running the fusion stage end-to-end from the command line |
+
+**What this table is not**: a claim that the pipeline is now bug-free. It is
+a record of what has specifically been checked and fixed, so a new audit's
+time goes toward genuinely new ground -- verifying these fixes still hold
+under real execution, and probing code paths and edge cases the two passes
+above did not specifically target -- rather than re-finding the same 14
+issues from zero. One deliberate omission from this table:
+`run_segmentation_inference.py::segment_image`'s 1.38%-pixel-deviation from
+HF's exact post-processing (§3.2) is *not* listed as "fixed" because it
+wasn't a bug -- it's an accepted, documented, unresolved methodological
+deviation. A reviewer re-examining that finding should know the code was
+deliberately left as-is, not that it was overlooked.
+
+## 8. Independent cross-model audit (Fable)
+
+Third full audit pass, run 2026-07-20 -- by a different model (Claude
+Fable) in a fresh session with no memory of building this pipeline,
+specifically because both prior passes (§7) were run by the same model
+family that wrote the code, in sessions descended from the same
+conversation. Same standard as §7: every finding below was confirmed by
+executing real code against the real project data files, none by
+inspection alone. §7.3's fixed-issue index was used as directed -- prior
+fixes were re-verified under execution rather than re-discovered, and this
+pass's time went to code paths the earlier audits did not target.
+
+### 8.1 Confirmed defects, found and fixed
+
+**1. The spatial join had no maximum snap distance, attaching evidence
+from other neighborhoods' streets to Lourdes boundary edges.** The
+Mapillary fetch (§3.1) covers Lourdes's *rectangular* geocoded bbox; the
+graph covers the neighborhood *polygon*. `snap_images_to_edges` assigned
+every image to its nearest edge unconditionally, however far away.
+Measured with `ox.distance.nearest_edges(..., return_dist=True)` over all
+3,689 images against the delivered fused graph: the snap-distance
+distribution is bimodal -- 2,179 images within 25m (median 13.7m: real
+on-street captures), a thin trough at 25-50m (233 images), then a second
+population of **1,277 images (34.6%) snapped from 50-501m away**, of which
+83% lie entirely outside the graph's convex hull. 966 of those far images
+carry presence-class detections, and 81 edges had received evidence from
+them -- i.e. photos of streets in adjacent neighborhoods were marking
+Lourdes boundary edges as having ramps/obstacles/crossings. Fixed with a
+25m maximum snap distance (`MAX_SNAP_DISTANCE_M`, chosen at the measured
+trough between the two populations: GPS error plus half a street width
+from an edge centerline); the re-run discards 1,510 images (the 50m+
+population plus the trough band).
+
+**2. Image evidence landed on only one of a two-way segment's two
+directed edges.** Every one of the 832 edges has a reverse twin (416
+pairs; OSMnx's walk network stores each two-way segment as two directed
+edges with identical geometry), and `nearest_edges` arbitrarily returns
+one of the two equidistant twins. Measured on the delivered fused graph:
+**245 of 416 twin pairs disagreed on `n_images_observed`**, and 87/69/99
+pairs disagreed on `ramp_present`/`marked_crossing_present`/
+`fixed_obstacle_present` respectively -- the same physical street reported
+"obstacle present" walking one direction and "unknown" walking the other.
+That this was unintended (not a directional-evidence design decision) is
+shown by the OSM-derived attributes, which are symmetric: all 8
+`highway=steps` edges form 4 clean twin pairs. Fixed by mirroring each
+image list onto the reverse twin in `snap_images_to_edges`; re-measured
+after the fix: 0 of 416 pairs disagree, on any attribute.
+
+Both fixes shipped together in one re-run of the committed fusion CLI.
+Net effect on the delivered data: image coverage rose from 432/832 (52%)
+to **508/832 edges (61.1%)** -- mirroring adds more than the far-image
+discard removes -- and §6's imagery columns rose accordingly
+(`ramp_present` 40.0%→47.1%, `fixed_obstacle_present` 39.8%→48.8%,
+`marked_crossing_present` 28.5%→34.4%). §5 and §6 above now show the
+corrected numbers with the old values noted in place.
+
+**3. Latent list-valued-tag crash in `osm_tags_to_canonical` -- the §2
+`highway` bug's exact mechanism, alive for every other tag.** OSMnx's
+`simplify=True` stores disagreeing merged-segment tags as lists (12 real
+list-valued `highway` edges exist in this graph today, and osmnx 2.1.0's
+`load_graphml` was verified to restore them as real Python lists, not
+strings). `highway` comparisons were fixed in §2, but executing the other
+tag paths with list inputs showed: `surface`/`smoothness` raise
+`TypeError: unhashable type: 'list'` (a list can't be tested for dict
+membership) -- killing the entire fusion run -- and
+`tactile_paving`/`kerb`/`handrail`'s scalar `==` comparisons silently drop
+the evidence. Not triggered by today's data (the tag-type census over all
+832 edges shows zero list-valued instances of those tags right now), but
+any future OSM edit absorbed by `refresh.py`'s weekly re-pull could
+produce one, and the failure would be either a crash or a silent evidence
+loss. Fixed with `_tag_values()` normalization on every tag comparison,
+resolving mixed lists pessimistically (worst tier / narrowest width /
+"no" over "yes" / "raised" over "lowered" -- the same worst-case-wins rule
+`aggregate_image_evidence` applies to imagery). Regression-checked by
+running old and new logic side-by-side over all 832 real edges with their
+real node data: 0 differences on scalar inputs; list inputs verified to
+resolve pessimistically instead of crashing.
+
+**4. §6's non-overlap claim was structurally unmeasurable from its own
+table.** The earlier prose read combined-≈-sum as evidence that OSM and
+imagery crossing coverage were "largely non-overlapping." But because OSM
+takes priority in the fusion, the imagery column only ever counts edges
+where OSM was silent -- Combined *always* equals the sum, so the claim was
+circular. Measured independently (running `osm_tags_to_canonical` and
+`aggregate_image_evidence` separately per edge): imagery observes
+crossings on 46.2% of all edges, OSM on 25.0%, overlapping on 11.8% --
+complementary, but with real overlap. §6's text is corrected above.
+
+### 8.2 Verified correct (checked specifically, found no defect)
+
+Re-verification of §7.3's fixed-issue index -- all 14 hold under real
+execution: #1 `validate_dem.py` re-run on the shipped DEM prints SUCESSO
+(5,311,026 px = 2,562×2,073, 85.5% valid, 838.0-928.0m, mean 875.3m --
+every §1 number exact); #2 the `highway=steps` fix holds through the real
+CLI load path (8 edges, `steps_present=present`, `source=osm` in the
+delivered fused graph); #3 implicitly via every graph load in this pass;
+#4/#5/#6 via a class-name census of all 63,843 real detections -- every
+class name the fusion and geometry code compares against ("Curb Cut",
+"Crosswalk - Plain", "Lane Marking - Crosswalk", "Sidewalk", "Pedestrian
+Area", "Curb", ...) appears verbatim in the delivered predictions, no
+mismatches, no "Guard Rail" mapping; #7 confidence recomputed over all
+63,843 detections: range exactly [0.0003, 1.0]; #8 width bias re-measured
+after this pass's re-fusion: 91.3% `under_50cm` (460/504) -- the §3.4 gate
+remains warranted; #9 the unbounded slope distribution recomputed from the
+shipped DEM reproduces every claimed figure exactly (median 4.85%, p95
+30.94%, 0.44% > 100%, max 2,418%) and the shipped bounded raster contains
+nothing above 150.0%; #10 `load_fused_graph` restores `n_images_observed`
+as int, every `_imputed` flag as real bool, `ramp_declivity_pct` as float;
+#11 node-tag coverage re-measured (crossing on 41/278 nodes → 25.0%,
+tactile 12.7%); #12 `scipy`/`numpy` present in requirements.txt; #13
+`DEFAULT_TILE_DEGREES = 0.004` confirmed in shipped code; #14 the CLI
+driver exercised end-to-end by this pass's own re-fusion run, and
+`impute_missing_attributes(NaN)` verified to impute rather than pass NaN
+through.
+
+Beyond re-verification, this pass specifically checked for and did **not**
+find problems in:
+
+- **Every §2 tag-coverage number**, recomputed from the delivered
+  `lourdes_graph_latest.graphml`: surface 58.2% (484/832), footway 9.6%
+  (80), tactile edge-level 1.9% (16), smoothness and lit 0.5% (4 each),
+  highway 100%, all the 0.0% rows, steps count 8 -- all exact.
+- **Every §3 dataset count**: 3,697 metadata rows, 3,689 predicted images,
+  63,843 detections -- exact.
+- **Every §3.4 validation number**, by re-running
+  `scripts/validate_geometric_heuristics.py` against the delivered
+  predictions: 3,579 compared, 57.8% agreement, 38.2% chance agreement,
+  Cohen's kappa 0.32, middle-bucket 646→118 confirmed, opposite-extreme
+  463+92=555 (15.5%) -- all exact.
+- **Pessimistic aggregation semantics**, on a real 45-image edge whose
+  images genuinely disagree (some show ramps/obstacles/crossings, some
+  none): OR-semantics for presence, narrowest width bucket among mixed
+  per-image buckets, steepest declivity -- aggregate output matches the
+  stored edge attributes.
+- **Imputation policy coverage**: all 9 canonical attributes covered; an
+  attribute not in the policy table passes through untouched with no
+  spurious flag and no KeyError path; `summarize_imputation_rate` output
+  matches §6's Imputed column.
+- **CRS centralization and argument order**: grep confirms no
+  pyproj/manual reprojection outside `spatial_utils.py` (only
+  `ox.project_graph`/`gdf.to_crs` library calls); every `to_dem_crs`
+  call site passes (lat, lon) in the documented order.
+- **Routability of the delivered fused graph** (the §6 experiment's
+  precondition): single connected component, 50/50 random
+  origin-destination pairs route via plain networkx Dijkstra
+  (weight=length), zero NaN elevations across 278 nodes, zero NaN grades
+  across 832 edges, |grade| median 2.87% / max 17.8% (plausible for
+  Lourdes's terrain).
+- **The CSV export's type integrity**: `pandas.read_csv` on the delivered
+  `lourdes_edges_fused.csv` parses every `_imputed` column as real bool
+  and `n_images_observed` as int64 -- the GraphML `'False'`-is-truthy trap
+  (§7 #10) does not recur through the CSV path for pandas consumers.
+
+### 8.3 Open items from this pass (reported, not silently resolved)
+
+- **The 25m snap threshold is a measured judgment call, not ground
+  truth.** It sits in the clear trough of a bimodal distribution, but the
+  233 discarded images in the 25-50m band are mixed -- mostly inside the
+  graph hull, plausibly including some legitimate captures on wide
+  boulevards. If per-image calibration or field checks ever happen,
+  re-examine this band.
+- **§3.1's raw-fetch counts (6,579 / 22,943 / 39,035 images at 4/16/56
+  tiles) are not re-verifiable from disk** -- only the downselected 3,697
+  rows are committed, and re-fetching is out of audit scope. Treated as
+  recorded history: plausible, consistent with the committed artifacts,
+  but unverified by this pass.
+- **`crossing=unmarked`/`crossing=no` would incorrectly register as
+  `marked_crossing_present`** -- the check is `is not None`, not a value
+  test. Zero instances in today's data (all 41 crossing nodes carry
+  `traffic_signals`/`marked`/`uncontrolled`), so this was left unfixed as
+  unexercised, but a future OSM refresh could import such a value; the
+  right mapping for `unmarked` (absent vs. unknown) is a semantics
+  decision worth making deliberately, not in passing.
+- **`ramp_compliance` is computed per image but never reaches any edge**
+  -- `extract_geometric_attributes` returns it, `aggregate_image_evidence`
+  doesn't propagate it (only `ramp_declivity_pct`). Not a correctness bug
+  (nothing downstream expects it yet), but the future impedance model
+  should either consume it or the dead output should be removed.
+- **`aggregate_image_evidence` can only ever produce `PRESENT`** -- an
+  image with a clear, unobstructed view of a sidewalk and no ramp
+  detection contributes nothing toward "ramp absent." All negative
+  evidence currently comes from OSM or imputation. This is a conservative
+  design (a missed detection isn't evidence of absence), not a bug, but
+  it caps how much imagery can ever reduce the imputation rate for
+  infrastructure attributes; worth stating as a known asymmetry in the
+  article.
 
 ## Open items
 
