@@ -17,3 +17,6 @@ __pycache__/
 
 # generated geodata and rasters
 data_files/
+
+
+.github/agents
