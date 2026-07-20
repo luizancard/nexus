@@ -24,3 +24,7 @@ cache/
 
 
 .github/agents
+
+# detection-precision validation artifacts (downloaded imagery, rendered sheets)
+scripts/_precision_cache/
+scripts/_precision_sheets/

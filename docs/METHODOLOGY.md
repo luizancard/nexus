@@ -835,13 +835,141 @@ find problems in:
   infrastructure attributes; worth stating as a known asymmetry in the
   article.
 
+## 9. Detection precision of the imagery-only presence attributes (Fable)
+
+The §8 audit closed the pipeline's *mechanical* correctness but flagged a
+substantive gap it could not close by execution alone: `ramp_present`
+(47.1%) and `fixed_obstacle_present` (48.8%) are the only two attributes in
+the fused schema whose real signal comes *entirely* from imagery -- 0% OSM
+coverage -- and they are high-impact obstacle terms in the cost formula,
+not tie-breakers. Yet unlike every other attribute (OSM cross-check for
+crossings/surface/steps; cross-method agreement for width, §3.4), these two
+had never been checked against anything beyond the 3-image visual QA in
+§3.2. They rest entirely on the pretrained Mask2Former's "Curb Cut" and
+obstacle-class outputs being right. If it systematically over-detects, the
+OSM-vs-fused comparison in §6 inflates in exactly the hoped-for direction,
+and nothing else in the repo would catch it. This section measures that.
+
+### 9.1 Method
+
+`scripts/validate_detection_precision.py` renders a fixed, seeded sample of
+real detections as full-frame + zoomed-inset overlays on the real Mapillary
+thumbnails (the same images inference ran on -- URL liveness and
+stored-vs-downloaded dimension match confirmed first). Adjudication is
+visual, per detection: **TRUE** (a curb cut / the named object is clearly
+there), **PLAUSIBLE** (right location -- a corner/crossing with a curb, or
+a vertical object where a bin/hydrant could be -- but the frame can't
+confirm it), or **FALSE** (the polygon lies on open road surface, crosswalk
+stripes, a vehicle, or the dark dashcam hood/foreground). This is a
+precision check only; it shares the honest limits of §3.4 -- no
+field-measured ground truth, single monocular thumbnails, adjudication by a
+vision-capable model (Fable), not a surveyor. Verdicts are recorded in the
+script's companion sample so the numbers below can be regenerated and
+re-judged rather than taken on faith.
+
+Sampling is deliberately two-pronged: an unbiased random sample of
+detections (the precision estimate) plus the smallest-area detections,
+because in `aggregate_image_evidence` **any** Curb Cut detection -- even a
+24px sliver at confidence 0.014 -- flips `ramp_present` to `present`, so
+tiny false positives do maximum damage and deserve separate scrutiny.
+
+### 9.2 Results
+
+**Curb Cut → `ramp_present` (30 random detections):** 6/30 clear TRUE, 6/30
+PLAUSIBLE, 18/30 FALSE. **Precision 20% strict (TRUE only) to 40% lenient
+(TRUE + PLAUSIBLE all counted correct).** The 10 smallest-area detections
+(24-29px): **0/10** -- every one a thin sliver on open road, a crosswalk
+stripe, or beside a car wheel. The FALSE cases cluster on three recurring
+artifacts: the dark dashcam hood/foreground (BLACKVUE-watermarked frames,
+consistent with the dashcam-source limitation already noted in §3.2),
+crosswalk paint mistaken for the ramp, and generic road-surface slivers.
+The clear-TRUE cases are all larger detections (≥0.09% of frame) at genuine
+street corners with visible ramps.
+
+**A confidence threshold does not rescue this -- checked explicitly.**
+Restricting to conf ≥ 0.85 keeps strict precision at just 25% (8 detections
+survive, 2 clear-TRUE); several of the highest-confidence detections (0.90+)
+are unambiguous false positives on the dashcam hood or road surface.
+Confidence and correctness are largely decorrelated here, so raising the
+bar mostly discards true and false detections together. (For reference, the
+fusion currently applies *no* confidence floor at all -- inconsistent with
+the 0.30 threshold `summarize_barriers_per_image` declares for the scoring
+path -- but that gap is nearly irrelevant to Curb Cut: only 2% of Curb Cut
+detections fall below 0.30. It matters more for `Barrier`, below.)
+
+**Obstacle classes → `fixed_obstacle_present` (22 detections, stratified
+across classes):** 7/22 clear TRUE, 3/22 PLAUSIBLE, 12/22 FALSE.
+**Precision 32% strict to 45% lenient.** Two class-specific findings: (1)
+`Barrier` is the noisiest class and the largest contributor -- its FALSE
+cases are dashcam hood, motion blur, and generic dark foreground, and 39%
+of *all* `Barrier` detections fall below even the pipeline's own stated
+0.30 confidence threshold yet are all used by fusion; (2) three of the
+clear-TRUE detections are `Manhole`s correctly identified but located *in
+the roadway*, not on the pedestrian path -- correct class, but not a
+mobility obstacle, so even true positives over-count sidewalk obstruction
+somewhat. Real, correctly-detected obstacles do exist (a bench, a bike
+rack, a roadside fence were all confirmed), so this is genuine signal --
+just low-precision signal.
+
+**Recall (under-detection) could not be adjudicated from thumbnails.** A
+sample of 10 images that have both a crossing and a curb but *no* Curb Cut
+detection showed no blatant missed ramps -- but confirming the *absence* of
+a small feature at street-corner distance in a single thumbnail is
+inherently unreliable, so this is reported as inconclusive, not as evidence
+of good recall. The clearly-demonstrated error mode is over-detection, not
+under-detection.
+
+### 9.3 Implication for the routing experiment -- a decision, not a bug
+
+This is not a defect to patch. It is a measured property of the pretrained
+model, and it directly shapes what the §6 routing comparison can honestly
+claim: the imagery-derived presence attributes carry real information (both
+are 0% in OSM, so any true detection is information OSM lacks) but at
+roughly 20-45% precision, which means a substantial fraction of the edges
+currently marked `ramp_present`/`fixed_obstacle_present` are false
+positives. A routing comparison run on this data as-is would likely
+overstate imagery's benefit.
+
+No code was changed in response, deliberately -- the same reasoning as the
+§3.4 width gate: imposing an uncalibrated confidence/area threshold to
+"clean up" the detections would swap one unvalidated assumption for
+another, and the threshold sensitivity above shows it wouldn't even work.
+The three honest paths forward, for the project owner to choose between
+before the routing phase, are:
+
+1. **Fine-tune** (the existing stretch goal, currently scoped to
+   `steps`/`handrail`/`tactile_paving`) -- widen it to also improve Curb
+   Cut / obstacle precision, which §9 now shows is the higher-leverage
+   target. This is the only path that raises precision rather than trading
+   it against recall.
+2. **Proceed with the limitation stated**, and design the routing
+   experiment to be robust to it -- e.g. report results as a function of a
+   detection-confidence sweep, or frame the imagery condition as an upper
+   bound on effect size rather than a point estimate, with §9's precision
+   band cited explicitly.
+3. **Manually correct** the ~500 imagery-touched edges against their source
+   images (feasible at this graph size: 508 edges, and the overlay tooling
+   now exists) to produce a validated subset for the experiment.
+
+What is *not* defensible is running the comparison, reporting a headline
+effect size, and omitting that its two dominant terms are ~20-45%-precision
+signals. §9 exists so that can't happen by omission.
+
 ## Open items
 
-- Stretch goal (YOLO26 fine-tune, `steps`/`handrail`/`tactile_paving` only):
-  not started. Cost estimate from planning: ~$2-8 on Azure/GCP T4 spot
-  pricing for a full 100-epoch run; a 3-class focused run should land at or
-  below that. Per §6, this is real but not the highest-priority next step --
-  the routing comparison experiment is.
+- **Imagery presence-attribute precision (§9) is the top pre-routing
+  decision** -- fine-tune, proceed-with-caveat, or manually validate the
+  ~500 imagery-touched edges. The `ramp_present`/`fixed_obstacle_present`
+  effect in any OSM-vs-fused routing comparison is inflated until one of
+  these is done.
+- Stretch goal (YOLO26 fine-tune): not started. Cost estimate from
+  planning: ~$2-8 on Azure/GCP T4 spot pricing for a full 100-epoch run.
+  Originally scoped to the 3 gap classes (`steps`/`handrail`/
+  `tactile_paving`); §9 shows Curb Cut / obstacle *precision* is the
+  higher-leverage target, so a re-scope to include those is worth
+  considering. Per §6 this remains downstream of the routing comparison in
+  sequencing, but §9's precision decision is now the immediate gate before
+  that comparison can produce a defensible number.
 - Width bucket carries known, quantified uncertainty (§3.4) and is
   currently fully imputed rather than trusted -- revisit if real per-image
   camera calibration or field measurements become available.
