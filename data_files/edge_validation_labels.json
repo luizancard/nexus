@@ -1,33 +1,83 @@
 {
+ "1100276534_29096573_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "yellow construction dumpster on sidewalk",
+  "verdict": "present"
+ },
  "1100276534_29096573_0|ramp_present": {
   "by": "fable-batch1",
   "note": "corner ramp at shopfront, sloped transition visible",
   "verdict": "present"
+ },
+ "1100276534_31899387_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "dark/motorcycle",
+  "verdict": "absent"
  },
  "1100276534_31899387_0|ramp_present": {
   "by": "fable-batch1",
   "note": "lowered corner curb",
   "verdict": "present"
  },
+ "1100276534_8278346183_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "vehicle ladder rack",
+  "verdict": "absent"
+ },
  "1100276534_8278346183_0|ramp_present": {
   "by": "fable-batch1",
   "note": "corner/crossing ramp, yellow building",
   "verdict": "present"
+ },
+ "12142473823_12195305791_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "highway guardrail not pedestrian",
+  "verdict": "absent"
  },
  "12142473823_12195305791_0|ramp_present": {
   "by": "fable-batch1",
   "note": "clear curb ramp with adjacent tactile paving",
   "verdict": "present"
  },
+ "12142473823_35968161_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "long region road/curb ambiguous",
+  "verdict": "uncertain"
+ },
  "12142473823_35968161_0|ramp_present": {
   "by": "fable-batch1",
   "note": "thin polygon on crosswalk approach",
   "verdict": "uncertain"
  },
+ "12142597971_12195305794_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "manhole on sidewalk",
+  "verdict": "present"
+ },
+ "12142597971_12195305795_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "utility cover on sidewalk",
+  "verdict": "present"
+ },
+ "12142597971_993654857_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "manhole on sidewalk",
+  "verdict": "present"
+ },
+ "12384498353_12384498354_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "night blur no obstacle",
+  "verdict": "absent"
+ },
  "12384498353_12384498354_0|ramp_present": {
   "by": "fable-batch1",
   "note": "corner sidewalk-to-street ramp",
   "verdict": "present"
+ },
+ "12384498353_27563813_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "night blur maybe barrier",
+  "verdict": "uncertain"
  },
  "12384498353_27563813_0|ramp_present": {
   "by": "fable-batch1",
@@ -39,9 +89,19 @@
   "note": "night motion blur, cannot confirm",
   "verdict": "uncertain"
  },
+ "12384498354_31899401_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "night blur foreground",
+  "verdict": "absent"
+ },
  "12384498354_31899401_0|ramp_present": {
   "by": "fable-batch1",
   "note": "blurry night, polygon on open road, no ramp",
+  "verdict": "absent"
+ },
+ "12390143990_12390143991_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "parked vehicle",
   "verdict": "absent"
  },
  "12390143990_12390143991_0|ramp_present": {
@@ -54,49 +114,114 @@
   "note": "driveway/lowered curb ramp, paved",
   "verdict": "present"
  },
+ "12390143991_2828018901_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "small road patch/shadow",
+  "verdict": "uncertain"
+ },
+ "12390143992_2887576701_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "road/median conf0.12",
+  "verdict": "absent"
+ },
  "12390143992_2887576701_0|ramp_present": {
   "by": "fable-batch1",
   "note": "thin sliver on open road surface",
   "verdict": "absent"
+ },
+ "12390143992_36417198_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "grate/utility cover on sidewalk",
+  "verdict": "present"
  },
  "12390143992_36417198_0|ramp_present": {
   "by": "fable-batch1",
   "note": "intersection corner, plausible but unconfirmed",
   "verdict": "uncertain"
  },
+ "12390143993_2890440901_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "vehicle dark",
+  "verdict": "absent"
+ },
+ "12390143993_36417197_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "road low conf",
+  "verdict": "absent"
+ },
  "12390143993_36417197_0|ramp_present": {
   "by": "fable-batch1",
   "note": "curb base by tree, ambiguous",
   "verdict": "uncertain"
+ },
+ "1240895690_8923330996_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "dashcam foreground 24% frame",
+  "verdict": "absent"
  },
  "1240895690_8923330996_0|ramp_present": {
   "by": "fable-batch1",
   "note": "wide plaza-entrance lowered curb ramp, clear",
   "verdict": "present"
  },
+ "12687642134_12687642135_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "dark road/vehicles",
+  "verdict": "absent"
+ },
  "12687642134_12687642135_0|ramp_present": {
   "by": "fable-batch1",
   "note": "mostly on road surface near crossing",
   "verdict": "uncertain"
+ },
+ "12687642134_41416532_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "vehicle",
+  "verdict": "absent"
  },
  "12687642134_41416532_0|ramp_present": {
   "by": "fable-batch1",
   "note": "corner ramp to crosswalk, red bike lane",
   "verdict": "present"
  },
+ "12687642134_8273339498_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "vegetation conf0.12",
+  "verdict": "absent"
+ },
  "12687642134_8273339498_0|ramp_present": {
   "by": "fable-batch1",
   "note": "small quad on road surface by stone wall",
   "verdict": "absent"
+ },
+ "12687642135_41416519_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "small feature on road high conf",
+  "verdict": "uncertain"
  },
  "12687642135_6913922194_0|ramp_present": {
   "by": "fable-batch1",
   "note": "paved crossing area, person walking, ambiguous",
   "verdict": "uncertain"
  },
+ "12687642138_12687642139_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "small object at wall base",
+  "verdict": "uncertain"
+ },
+ "12687642138_41416532_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "vehicle",
+  "verdict": "absent"
+ },
  "12687642138_41416532_0|ramp_present": {
   "by": "fable-batch1",
   "note": "dashcam hood/foreground, conf 0.17",
+  "verdict": "absent"
+ },
+ "12687642138_6913919596_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "parked vehicles",
   "verdict": "absent"
  },
  "12687642138_6913919596_0|ramp_present": {
@@ -104,9 +229,19 @@
   "note": "plaza/driveway lowered area, plausible",
   "verdict": "uncertain"
  },
+ "12687642139_28635039_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "manhole on sidewalk",
+  "verdict": "present"
+ },
  "12687642139_28635039_0|ramp_present": {
   "by": "fable-batch1",
   "note": "large corner ramp, conf 0.95, person crossing",
+  "verdict": "present"
+ },
+ "12687642139_41416519_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "manhole/drain",
   "verdict": "present"
  },
  "12687642139_41416519_0|ramp_present": {
@@ -114,10 +249,20 @@
   "note": "corner curb ramp near drain",
   "verdict": "present"
  },
+ "12687642145_12687642150_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "tiny object on road",
+  "verdict": "uncertain"
+ },
  "12687642145_12687642150_0|ramp_present": {
   "by": "fable-batch1",
   "note": "curb along fence, cannot confirm lowered",
   "verdict": "uncertain"
+ },
+ "12687642145_8933734968_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "manhole on cobble sidewalk",
+  "verdict": "present"
  },
  "12687642145_8933734968_0|ramp_present": {
   "by": "fable-batch1",
@@ -129,10 +274,20 @@
   "note": "small on rough pavement near corner",
   "verdict": "uncertain"
  },
+ "12687642155_2973310934_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "arrow on road surface",
+  "verdict": "absent"
+ },
  "12687642155_2973310934_0|ramp_present": {
   "by": "fable-batch2",
   "note": "night blur, crosswalk area",
   "verdict": "uncertain"
+ },
+ "12687642155_36417206_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "road/vehicles low conf",
+  "verdict": "absent"
  },
  "12687642155_36417206_0|ramp_present": {
   "by": "fable-batch2",
@@ -144,19 +299,39 @@
   "note": "low-conf polygon on open road surface",
   "verdict": "absent"
  },
+ "1520492097_36417192_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "vehicle/road",
+  "verdict": "absent"
+ },
  "1520492097_36417192_0|ramp_present": {
   "by": "fable-batch2",
   "note": "night/blur dark road",
   "verdict": "uncertain"
+ },
+ "1520492097_9451512618_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "vehicle/road",
+  "verdict": "absent"
  },
  "1520492097_9451512618_0|ramp_present": {
   "by": "fable-batch2",
   "note": "dark foreground near watermark",
   "verdict": "uncertain"
  },
+ "2316604343_29095398_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "wall base/shadow",
+  "verdict": "uncertain"
+ },
  "2316604343_29095398_0|ramp_present": {
   "by": "fable-batch2",
   "note": "corner lowered curb, well-imaged conf0.96",
+  "verdict": "present"
+ },
+ "2316604345_8996907562_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "red trash bin by bollard",
   "verdict": "present"
  },
  "2316604345_8996907562_0|ramp_present": {
@@ -169,34 +344,69 @@
   "note": "wide lowered curb ramp, tactile paving",
   "verdict": "present"
  },
+ "2367778808_29096773_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "sidewalk advertising sign",
+  "verdict": "present"
+ },
  "2367778808_29096773_0|ramp_present": {
   "by": "fable-batch2",
   "note": "clear curb ramp to crosswalk",
   "verdict": "present"
+ },
+ "2460331366_29096773_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "night blur/vehicle",
+  "verdict": "absent"
  },
  "2460331366_29096773_0|ramp_present": {
   "by": "fable-batch2",
   "note": "night motion blur",
   "verdict": "uncertain"
  },
+ "27584878_320407457_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "road/foreground",
+  "verdict": "absent"
+ },
  "27584878_320407457_0|ramp_present": {
   "by": "fable-batch2",
   "note": "night motion blur at corner",
   "verdict": "uncertain"
+ },
+ "27591804_28800997_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "utility cover on sidewalk",
+  "verdict": "present"
  },
  "27591804_28800997_0|ramp_present": {
   "by": "fable-batch2",
   "note": "corner ramp, slope to street",
   "verdict": "present"
  },
+ "27591804_2941234597_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "raised median conf0.06",
+  "verdict": "uncertain"
+ },
  "27591804_2941234597_0|ramp_present": {
   "by": "fable-batch2",
   "note": "clear corner curb ramp near pole",
   "verdict": "present"
  },
+ "27591804_35968129_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "dark foreground",
+  "verdict": "absent"
+ },
  "27591804_35968129_0|ramp_present": {
   "by": "fable-batch2",
   "note": "corner ramp at crossing",
+  "verdict": "present"
+ },
+ "28109318_2827750301_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "manhole at curb edge",
   "verdict": "present"
  },
  "28109318_2827750301_0|ramp_present": {
@@ -204,9 +414,19 @@
   "note": "long thin along curb, no clear ramp",
   "verdict": "uncertain"
  },
+ "28109318_29096146_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "red dumpster on street",
+  "verdict": "present"
+ },
  "28109318_29096146_0|ramp_present": {
   "by": "fable-batch2",
   "note": "driveway entrance lowered curb",
+  "verdict": "present"
+ },
+ "28109318_60649417_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "red dumpster on street",
   "verdict": "present"
  },
  "28109318_60649417_0|ramp_present": {
@@ -214,24 +434,49 @@
   "note": "wide driveway lowered curb ramp",
   "verdict": "present"
  },
+ "28109318_8075703845_0|fixed_obstacle_present": {
+  "by": "fable-ob-b1",
+  "note": "dark foreground/road",
+  "verdict": "absent"
+ },
  "28109318_8075703845_0|ramp_present": {
   "by": "fable-batch2",
   "note": "rough curb at pole base",
   "verdict": "uncertain"
+ },
+ "28109319_2827750301_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "present"
  },
  "28109319_2827750301_0|ramp_present": {
   "by": "fable-batch2",
   "note": "gated entrance lowered curb ramp",
   "verdict": "present"
  },
+ "28109319_8933869817_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "absent"
+ },
  "28109319_8933869817_0|ramp_present": {
   "by": "fable-batch2",
   "note": "thin along curb line, no clear ramp",
   "verdict": "uncertain"
  },
+ "2827321101_60649414_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "present"
+ },
  "2827321101_60649414_0|ramp_present": {
   "by": "fable-batch2",
   "note": "ENTRADA driveway lowered curb",
+  "verdict": "present"
+ },
+ "2827321101_8920624348_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
   "verdict": "present"
  },
  "2827321101_8920624348_0|ramp_present": {
@@ -239,24 +484,54 @@
   "note": "gas-station corner lowered curb",
   "verdict": "present"
  },
+ "2827321102_2827341101_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "uncertain"
+ },
+ "2827321102_29096295_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "present"
+ },
  "2827321102_29096295_0|ramp_present": {
   "by": "fable-batch2",
   "note": "driveway lowered curb by planter",
   "verdict": "present"
+ },
+ "2827341101_8920624349_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "uncertain"
  },
  "2827341101_8920624349_0|ramp_present": {
   "by": "fable-batch2",
   "note": "small blurry road",
   "verdict": "uncertain"
  },
+ "2827350301_36417203_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "present"
+ },
  "2827350301_36417203_0|ramp_present": {
   "by": "fable-batch2",
   "note": "small blurry road/curb",
   "verdict": "uncertain"
  },
+ "2827350301_36417205_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "absent"
+ },
  "2827350301_36417205_0|ramp_present": {
   "by": "fable-batch2",
   "note": "corner ramp to crossing",
+  "verdict": "present"
+ },
+ "2827350302_36417203_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
   "verdict": "present"
  },
  "2827350302_36417203_0|ramp_present": {
@@ -264,19 +539,39 @@
   "note": "yellow-building corner ramp",
   "verdict": "present"
  },
+ "2827361001_28801018_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "present"
+ },
  "2827361001_28801018_0|ramp_present": {
   "by": "fable-batch2",
   "note": "wide driveway lowered curb ramp",
   "verdict": "present"
+ },
+ "2827361001_2973310934_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "absent"
  },
  "2827361001_2973310934_0|ramp_present": {
   "by": "fable-batch2",
   "note": "driveway entrance lowered curb",
   "verdict": "present"
  },
+ "2827361003_2973310633_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "absent"
+ },
  "2827361003_2973310633_0|ramp_present": {
   "by": "fable-batch2",
   "note": "diagonal on road/curb w/ shadow",
+  "verdict": "uncertain"
+ },
+ "2827361003_36417204_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
   "verdict": "uncertain"
  },
  "2827361003_36417204_0|ramp_present": {
@@ -289,15 +584,30 @@
   "note": "corner curb near dark bottom",
   "verdict": "uncertain"
  },
+ "2827750301_29096717_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "present"
+ },
  "2827750301_29096717_0|ramp_present": {
   "by": "fable-batch2",
   "note": "clear lowered curb section by tree",
   "verdict": "present"
  },
+ "2827981702_31899387_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "uncertain"
+ },
  "2827981702_31899387_0|ramp_present": {
   "by": "fable-batch2",
   "note": "corner ramp near crossing markings",
   "verdict": "present"
+ },
+ "2827994502_8305059410_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "absent"
  },
  "2827994502_8305059410_0|ramp_present": {
   "by": "fable-batch2",
@@ -309,14 +619,39 @@
   "note": "thin sliver on road surface",
   "verdict": "absent"
  },
+ "2828018901_36417204_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "absent"
+ },
+ "2828019101_36417204_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "uncertain"
+ },
+ "2828035001_60649397_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "absent"
+ },
  "2828035001_60649397_0|ramp_present": {
   "by": "fable-batch2",
   "note": "clear corner curb ramp, conf0.96",
   "verdict": "present"
  },
+ "2828035001_8933734968_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "absent"
+ },
  "2828035001_8933734968_0|ramp_present": {
   "by": "fable-batch2",
   "note": "small quad at corner/curb",
+  "verdict": "uncertain"
+ },
+ "28294447_28294459_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
   "verdict": "uncertain"
  },
  "28294447_28294459_0|ramp_present": {
@@ -324,20 +659,45 @@
   "note": "road/gutter dark, no clear ramp",
   "verdict": "uncertain"
  },
+ "28294447_31899401_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "present"
+ },
  "28294447_31899401_0|ramp_present": {
   "by": "fable-batch3",
   "note": "green-tint night road",
   "verdict": "uncertain"
+ },
+ "28294447_9455873699_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "present"
  },
  "28294447_9455873699_0|ramp_present": {
   "by": "fable-batch3",
   "note": "curb line w/ car, no clear ramp",
   "verdict": "uncertain"
  },
+ "28294449_9388545618_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "absent"
+ },
  "28294449_9388545618_0|ramp_present": {
   "by": "fable-batch3",
   "note": "dark blurry road",
   "verdict": "uncertain"
+ },
+ "28294449_9455873699_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "absent"
+ },
+ "28294459_505534958_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "present"
  },
  "28294459_505534958_0|ramp_present": {
   "by": "fable-batch3",
@@ -354,6 +714,16 @@
   "note": "dark small",
   "verdict": "uncertain"
  },
+ "2833561106_60649404_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "uncertain"
+ },
+ "2837027401_2918622402_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "absent"
+ },
  "2837027401_2918622402_0|ramp_present": {
   "by": "fable-batch3",
   "note": "corner ramp at crosswalk",
@@ -364,14 +734,39 @@
   "note": "corner sloped curb",
   "verdict": "present"
  },
+ "2837028301_28800988_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "present"
+ },
  "2837028301_28800988_0|ramp_present": {
   "by": "fable-batch3",
   "note": "corner lowered curb",
   "verdict": "present"
  },
+ "2837028301_36417186_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "uncertain"
+ },
  "2837028301_36417186_0|ramp_present": {
   "by": "fable-batch3",
   "note": "large driveway ramp w/ cart",
+  "verdict": "present"
+ },
+ "2837028301_36417188_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "present"
+ },
+ "2848158301_36417189_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "uncertain"
+ },
+ "2848158301_36417192_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
   "verdict": "present"
  },
  "2848158301_36417192_0|ramp_present": {
@@ -379,14 +774,29 @@
   "note": "corner ramp by yellow post",
   "verdict": "present"
  },
+ "2848159201_35968156_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "present"
+ },
  "2848159201_35968156_0|ramp_present": {
   "by": "fable-batch3",
   "note": "gas-station driveway ramp",
   "verdict": "present"
  },
+ "2848159201_8979229854_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "absent"
+ },
  "2848159201_8979229854_0|ramp_present": {
   "by": "fable-batch3",
   "note": "gas-station corner ramp",
+  "verdict": "present"
+ },
+ "2855674809_2855678101_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
   "verdict": "present"
  },
  "2855674809_2855678101_0|ramp_present": {
@@ -394,10 +804,20 @@
   "note": "corner/driveway ramp w/ car",
   "verdict": "present"
  },
+ "2855674809_36417194_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "absent"
+ },
  "2855674809_36417194_0|ramp_present": {
   "by": "fable-batch3",
   "note": "corner ramp to crosswalk",
   "verdict": "present"
+ },
+ "2855678101_36417194_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "absent"
  },
  "2855678101_36417194_0|ramp_present": {
   "by": "fable-batch3",
@@ -409,10 +829,25 @@
   "note": "thin sliver on road",
   "verdict": "absent"
  },
+ "2857144601_28800996_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "absent"
+ },
  "2857144601_28800996_0|ramp_present": {
   "by": "fable-batch3",
   "note": "dark road/curb",
   "verdict": "uncertain"
+ },
+ "2857144601_2941234597_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "absent"
+ },
+ "28635039_35968161_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "absent"
  },
  "28635039_35968161_0|ramp_present": {
   "by": "fable-batch3",
@@ -424,15 +859,30 @@
   "note": "small quad on road/crossing",
   "verdict": "absent"
  },
+ "2878237901_2918622402_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "present"
+ },
  "2878237901_2918622402_0|ramp_present": {
   "by": "fable-batch3",
   "note": "thin curb line at corner",
   "verdict": "uncertain"
  },
+ "28800987_28800997_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "present"
+ },
  "28800987_28800997_0|ramp_present": {
   "by": "fable-batch3",
   "note": "corner ramp at crosswalk",
   "verdict": "present"
+ },
+ "28800987_28801016_0|fixed_obstacle_present": {
+  "by": "fable-ob-b2",
+  "note": "obstacle batch2 (best-detection)",
+  "verdict": "absent"
  },
  "28800987_29095458_0|ramp_present": {
   "by": "fable-batch3",
