@@ -1,0 +1,640 @@
+{
+  "config": {
+    "seed": 42,
+    "n_pairs": 1000,
+    "profile": {
+      "surface_factors": {
+        "good": 1.0,
+        "fair": 1.15,
+        "poor": 1.4
+      },
+      "slope_factor_at_nbr_ceiling": 1.5,
+      "ramp_discount": 0.8,
+      "obstacle_penalty_m": 25.0,
+      "steps_penalty_m": 500.0
+    },
+    "precision_9_4": {
+      "ramp_present": 0.908,
+      "fixed_obstacle_present": 0.64
+    }
+  },
+  "comparisons": {
+    "full_validated": {
+      "n_pairs": 1000,
+      "n_solved": 1000,
+      "n_unchanged": 503,
+      "n_differ": 497,
+      "route_diff_rate": 0.497,
+      "route_diff_ci95": [
+        0.465,
+        0.528
+      ],
+      "classification": {
+        "improvement": 315,
+        "regression": 57,
+        "neutral": 79,
+        "mixed": 46
+      },
+      "net_improvement": 258,
+      "net_improvement_rate_of_all": 0.258,
+      "improvement_rate_of_differ": 0.6338028169014085,
+      "improvement_rate_of_differ_ci95": [
+        0.5935613682092555,
+        0.676056338028169
+      ],
+      "improvement_rate_of_all": 0.315,
+      "regression_causes": {
+        "high_grade_len": 49,
+        "obstacles": 7,
+        "curb_barriers": 3
+      },
+      "median_cost_base": 909.0719230502418,
+      "median_cost_full": 872.4707012121709,
+      "wilcoxon_stat": 29321.0,
+      "wilcoxon_p": 3.3888402580294834e-120,
+      "mean_ramp_access_base": 4.212,
+      "mean_ramp_access_full": 4.845,
+      "aggregate_magnitude": {
+        "obstacles_base": 2118.0,
+        "obstacles_full": 1569.0,
+        "curb_barriers_base": 272.0,
+        "curb_barriers_full": 185.0,
+        "steps_base": 15.0,
+        "steps_full": 15.0,
+        "high_grade_len_base": 93625.49361878022,
+        "high_grade_len_full": 99493.63692779823,
+        "ramp_access_base": 4212.0,
+        "ramp_access_full": 4845.0
+      },
+      "obstacle_wilcoxon_p": 9.183345356700566e-58,
+      "n_routes_fewer_obstacles": 349,
+      "n_routes_more_obstacles": 13
+    },
+    "full_raw": {
+      "n_pairs": 1000,
+      "n_solved": 1000,
+      "n_unchanged": 491,
+      "n_differ": 509,
+      "route_diff_rate": 0.509,
+      "route_diff_ci95": [
+        0.478,
+        0.54
+      ],
+      "classification": {
+        "improvement": 212,
+        "regression": 93,
+        "neutral": 151,
+        "mixed": 53
+      },
+      "net_improvement": 119,
+      "net_improvement_rate_of_all": 0.119,
+      "improvement_rate_of_differ": 0.4165029469548134,
+      "improvement_rate_of_differ_ci95": [
+        0.37524557956778,
+        0.45972495088408644
+      ],
+      "improvement_rate_of_all": 0.212,
+      "regression_causes": {
+        "obstacles": 36,
+        "curb_barriers": 60,
+        "high_grade_len": 15
+      },
+      "median_cost_base": 909.0719230502418,
+      "median_cost_full": 948.314015103567,
+      "wilcoxon_stat": 59926.0,
+      "wilcoxon_p": 2.930960657138054e-91,
+      "mean_ramp_access_base": 4.212,
+      "mean_ramp_access_full": 3.984,
+      "aggregate_magnitude": {
+        "obstacles_base": 2118.0,
+        "obstacles_full": 1901.0,
+        "curb_barriers_base": 272.0,
+        "curb_barriers_full": 279.0,
+        "steps_base": 15.0,
+        "steps_full": 15.0,
+        "high_grade_len_base": 93625.49361878022,
+        "high_grade_len_full": 92418.06213087348,
+        "ramp_access_base": 4212.0,
+        "ramp_access_full": 3984.0
+      },
+      "obstacle_wilcoxon_p": 6.66379659267259e-18,
+      "n_routes_fewer_obstacles": 189,
+      "n_routes_more_obstacles": 46
+    },
+    "ramp_only": {
+      "n_pairs": 1000,
+      "n_solved": 1000,
+      "n_unchanged": 681,
+      "n_differ": 319,
+      "route_diff_rate": 0.319,
+      "route_diff_ci95": [
+        0.289,
+        0.347
+      ],
+      "classification": {
+        "improvement": 42,
+        "regression": 128,
+        "neutral": 108,
+        "mixed": 41
+      },
+      "net_improvement": -86,
+      "net_improvement_rate_of_all": -0.086,
+      "improvement_rate_of_differ": 0.13166144200626959,
+      "improvement_rate_of_differ_ci95": [
+        0.09717868338557993,
+        0.16927899686520376
+      ],
+      "improvement_rate_of_all": 0.042,
+      "regression_causes": {
+        "obstacles": 71,
+        "high_grade_len": 65,
+        "curb_barriers": 15
+      },
+      "median_cost_base": 909.0719230502418,
+      "median_cost_full": 830.8347499088949,
+      "wilcoxon_stat": 0.0,
+      "wilcoxon_p": 4.513194708436735e-156,
+      "mean_ramp_access_base": 4.212,
+      "mean_ramp_access_full": 4.856,
+      "aggregate_magnitude": {
+        "obstacles_base": 2118.0,
+        "obstacles_full": 2190.0,
+        "curb_barriers_base": 272.0,
+        "curb_barriers_full": 279.0,
+        "steps_base": 15.0,
+        "steps_full": 15.0,
+        "high_grade_len_base": 93625.49361878022,
+        "high_grade_len_full": 99825.5774132057,
+        "ramp_access_base": 4212.0,
+        "ramp_access_full": 4856.0
+      },
+      "obstacle_wilcoxon_p": 5.375839884754932e-05,
+      "n_routes_fewer_obstacles": 56,
+      "n_routes_more_obstacles": 90
+    },
+    "obstacle_only": {
+      "n_pairs": 1000,
+      "n_solved": 1000,
+      "n_unchanged": 641,
+      "n_differ": 359,
+      "route_diff_rate": 0.359,
+      "route_diff_ci95": [
+        0.329,
+        0.389
+      ],
+      "classification": {
+        "improvement": 324,
+        "regression": 0,
+        "neutral": 0,
+        "mixed": 35
+      },
+      "net_improvement": 324,
+      "net_improvement_rate_of_all": 0.324,
+      "improvement_rate_of_differ": 0.9025069637883009,
+      "improvement_rate_of_differ_ci95": [
+        0.871866295264624,
+        0.9303621169916435
+      ],
+      "improvement_rate_of_all": 0.324,
+      "regression_causes": {},
+      "median_cost_base": 909.0719230502418,
+      "median_cost_full": 938.8037419832125,
+      "wilcoxon_stat": 0.0,
+      "wilcoxon_p": 2.2954270039872635e-134,
+      "mean_ramp_access_base": 4.212,
+      "mean_ramp_access_full": 3.946,
+      "aggregate_magnitude": {
+        "obstacles_base": 2118.0,
+        "obstacles_full": 1455.0,
+        "curb_barriers_base": 272.0,
+        "curb_barriers_full": 193.0,
+        "steps_base": 15.0,
+        "steps_full": 15.0,
+        "high_grade_len_base": 93625.49361878022,
+        "high_grade_len_full": 90598.52089664087,
+        "ramp_access_base": 4212.0,
+        "ramp_access_full": 3946.0
+      },
+      "obstacle_wilcoxon_p": 8.12422330179885e-63,
+      "n_routes_fewer_obstacles": 359,
+      "n_routes_more_obstacles": 0
+    }
+  },
+  "model_refinement": {
+    "naive_ramp_discounts_slope": {
+      "n_pairs": 1000,
+      "n_solved": 1000,
+      "n_unchanged": 493,
+      "n_differ": 507,
+      "route_diff_rate": 0.507,
+      "route_diff_ci95": [
+        0.474,
+        0.538
+      ],
+      "classification": {
+        "improvement": 297,
+        "regression": 72,
+        "neutral": 81,
+        "mixed": 57
+      },
+      "net_improvement": 225,
+      "net_improvement_rate_of_all": 0.225,
+      "improvement_rate_of_differ": 0.5857988165680473,
+      "improvement_rate_of_differ_ci95": [
+        0.5424063116370809,
+        0.6272189349112426
+      ],
+      "improvement_rate_of_all": 0.297,
+      "regression_causes": {
+        "obstacles": 18,
+        "high_grade_len": 57,
+        "curb_barriers": 5
+      },
+      "median_cost_base": 909.0719230502418,
+      "median_cost_full": 850.9701347209734,
+      "wilcoxon_stat": 17801.0,
+      "wilcoxon_p": 2.5559715320239694e-134,
+      "mean_ramp_access_base": 4.212,
+      "mean_ramp_access_full": 4.906,
+      "aggregate_magnitude": {
+        "obstacles_base": 2118.0,
+        "obstacles_full": 1603.0,
+        "curb_barriers_base": 272.0,
+        "curb_barriers_full": 185.0,
+        "steps_base": 15.0,
+        "steps_full": 15.0,
+        "high_grade_len_base": 93625.49361878022,
+        "high_grade_len_full": 102214.2774271865,
+        "ramp_access_base": 4212.0,
+        "ramp_access_full": 4906.0
+      },
+      "obstacle_wilcoxon_p": 5.318058077740549e-48,
+      "n_routes_fewer_obstacles": 334,
+      "n_routes_more_obstacles": 28
+    },
+    "refined_slope_protected": {
+      "n_pairs": 1000,
+      "n_solved": 1000,
+      "n_unchanged": 503,
+      "n_differ": 497,
+      "route_diff_rate": 0.497,
+      "route_diff_ci95": [
+        0.465,
+        0.528
+      ],
+      "classification": {
+        "improvement": 315,
+        "regression": 57,
+        "neutral": 79,
+        "mixed": 46
+      },
+      "net_improvement": 258,
+      "net_improvement_rate_of_all": 0.258,
+      "improvement_rate_of_differ": 0.6338028169014085,
+      "improvement_rate_of_differ_ci95": [
+        0.5935613682092555,
+        0.676056338028169
+      ],
+      "improvement_rate_of_all": 0.315,
+      "regression_causes": {
+        "high_grade_len": 49,
+        "obstacles": 7,
+        "curb_barriers": 3
+      },
+      "median_cost_base": 909.0719230502418,
+      "median_cost_full": 872.4707012121709,
+      "wilcoxon_stat": 29321.0,
+      "wilcoxon_p": 3.3888402580294834e-120,
+      "mean_ramp_access_base": 4.212,
+      "mean_ramp_access_full": 4.845,
+      "aggregate_magnitude": {
+        "obstacles_base": 2118.0,
+        "obstacles_full": 1569.0,
+        "curb_barriers_base": 272.0,
+        "curb_barriers_full": 185.0,
+        "steps_base": 15.0,
+        "steps_full": 15.0,
+        "high_grade_len_base": 93625.49361878022,
+        "high_grade_len_full": 99493.63692779823,
+        "ramp_access_base": 4212.0,
+        "ramp_access_full": 4845.0
+      },
+      "obstacle_wilcoxon_p": 9.183345356700566e-58,
+      "n_routes_fewer_obstacles": 349,
+      "n_routes_more_obstacles": 13
+    }
+  },
+  "detection_error_gap": 0.21729986994659511,
+  "improvement_by_distance": [
+    {
+      "band": 0,
+      "dist_lo_m": 0.0,
+      "dist_hi_m": 386.5703920202492,
+      "n": 250,
+      "route_diff_rate": 0.244,
+      "improvement_rate_of_differ": 0.6065573770491803
+    },
+    {
+      "band": 1,
+      "dist_lo_m": 386.5703920202492,
+      "dist_hi_m": 599.7770271101074,
+      "n": 250,
+      "route_diff_rate": 0.44,
+      "improvement_rate_of_differ": 0.7363636363636363
+    },
+    {
+      "band": 2,
+      "dist_lo_m": 599.7770271101074,
+      "dist_hi_m": 884.4812999313191,
+      "n": 250,
+      "route_diff_rate": 0.528,
+      "improvement_rate_of_differ": 0.6590909090909091
+    },
+    {
+      "band": 3,
+      "dist_lo_m": 884.4812999313191,
+      "dist_hi_m": 1737.5532511913052,
+      "n": 250,
+      "route_diff_rate": 0.776,
+      "improvement_rate_of_differ": 0.5670103092783505
+    }
+  ],
+  "weight_sensitivity": [
+    {
+      "ramp_discount": 0.7,
+      "obstacle_penalty_m": 15.0,
+      "route_diff_rate": 0.523,
+      "improvement_rate_of_differ": 0.5086042065009561,
+      "improvement_rate_of_all": 0.266
+    },
+    {
+      "ramp_discount": 0.7,
+      "obstacle_penalty_m": 25.0,
+      "route_diff_rate": 0.545,
+      "improvement_rate_of_differ": 0.5669724770642202,
+      "improvement_rate_of_all": 0.309
+    },
+    {
+      "ramp_discount": 0.7,
+      "obstacle_penalty_m": 40.0,
+      "route_diff_rate": 0.554,
+      "improvement_rate_of_differ": 0.6335740072202166,
+      "improvement_rate_of_all": 0.351
+    },
+    {
+      "ramp_discount": 0.8,
+      "obstacle_penalty_m": 15.0,
+      "route_diff_rate": 0.468,
+      "improvement_rate_of_differ": 0.5683760683760684,
+      "improvement_rate_of_all": 0.266
+    },
+    {
+      "ramp_discount": 0.8,
+      "obstacle_penalty_m": 25.0,
+      "route_diff_rate": 0.497,
+      "improvement_rate_of_differ": 0.6338028169014085,
+      "improvement_rate_of_all": 0.315
+    },
+    {
+      "ramp_discount": 0.8,
+      "obstacle_penalty_m": 40.0,
+      "route_diff_rate": 0.544,
+      "improvement_rate_of_differ": 0.6875,
+      "improvement_rate_of_all": 0.374
+    },
+    {
+      "ramp_discount": 0.9,
+      "obstacle_penalty_m": 15.0,
+      "route_diff_rate": 0.348,
+      "improvement_rate_of_differ": 0.735632183908046,
+      "improvement_rate_of_all": 0.256
+    },
+    {
+      "ramp_discount": 0.9,
+      "obstacle_penalty_m": 25.0,
+      "route_diff_rate": 0.448,
+      "improvement_rate_of_differ": 0.7991071428571429,
+      "improvement_rate_of_all": 0.358
+    },
+    {
+      "ramp_discount": 0.9,
+      "obstacle_penalty_m": 40.0,
+      "route_diff_rate": 0.522,
+      "improvement_rate_of_differ": 0.7624521072796935,
+      "improvement_rate_of_all": 0.398
+    }
+  ],
+  "seed_stability": {
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "per_seed": [
+      {
+        "seed": 1,
+        "route_diff_rate": 0.503,
+        "improvement_rate_of_differ": 0.6043737574552683,
+        "net_improvement_rate_of_all": 0.241,
+        "obstacles_avoided": 551.0
+      },
+      {
+        "seed": 2,
+        "route_diff_rate": 0.489,
+        "improvement_rate_of_differ": 0.6012269938650306,
+        "net_improvement_rate_of_all": 0.235,
+        "obstacles_avoided": 562.0
+      },
+      {
+        "seed": 3,
+        "route_diff_rate": 0.502,
+        "improvement_rate_of_differ": 0.6195219123505976,
+        "net_improvement_rate_of_all": 0.245,
+        "obstacles_avoided": 562.0
+      },
+      {
+        "seed": 4,
+        "route_diff_rate": 0.489,
+        "improvement_rate_of_differ": 0.5766871165644172,
+        "net_improvement_rate_of_all": 0.207,
+        "obstacles_avoided": 491.0
+      },
+      {
+        "seed": 5,
+        "route_diff_rate": 0.502,
+        "improvement_rate_of_differ": 0.6274900398406374,
+        "net_improvement_rate_of_all": 0.26,
+        "obstacles_avoided": 537.0
+      },
+      {
+        "seed": 6,
+        "route_diff_rate": 0.488,
+        "improvement_rate_of_differ": 0.6168032786885246,
+        "net_improvement_rate_of_all": 0.237,
+        "obstacles_avoided": 572.0
+      },
+      {
+        "seed": 7,
+        "route_diff_rate": 0.514,
+        "improvement_rate_of_differ": 0.6556420233463035,
+        "net_improvement_rate_of_all": 0.279,
+        "obstacles_avoided": 613.0
+      },
+      {
+        "seed": 8,
+        "route_diff_rate": 0.495,
+        "improvement_rate_of_differ": 0.5858585858585859,
+        "net_improvement_rate_of_all": 0.234,
+        "obstacles_avoided": 540.0
+      },
+      {
+        "seed": 9,
+        "route_diff_rate": 0.456,
+        "improvement_rate_of_differ": 0.581140350877193,
+        "net_improvement_rate_of_all": 0.207,
+        "obstacles_avoided": 502.0
+      },
+      {
+        "seed": 10,
+        "route_diff_rate": 0.507,
+        "improvement_rate_of_differ": 0.5936883629191322,
+        "net_improvement_rate_of_all": 0.226,
+        "obstacles_avoided": 521.0
+      }
+    ],
+    "summary": {
+      "route_diff_rate": {
+        "mean": 0.49450000000000005,
+        "sd": 0.015187165634179408,
+        "min": 0.456,
+        "max": 0.514
+      },
+      "improvement_rate_of_differ": {
+        "mean": 0.606243242176569,
+        "sd": 0.02298921504567856,
+        "min": 0.5766871165644172,
+        "max": 0.6556420233463035
+      },
+      "net_improvement_rate_of_all": {
+        "mean": 0.2371,
+        "sd": 0.02075307206174547,
+        "min": 0.207,
+        "max": 0.279
+      },
+      "obstacles_avoided": {
+        "mean": 545.1,
+        "sd": 33.75929501633587,
+        "min": 491.0,
+        "max": 613.0
+      }
+    }
+  },
+  "threshold_sensitivity": [
+    {
+      "grade_margin_m": 0.0,
+      "high_grade_threshold": 0.05,
+      "route_diff_rate": 0.497,
+      "improvement_rate_of_differ": 0.6981891348088531
+    },
+    {
+      "grade_margin_m": 0.0,
+      "high_grade_threshold": 0.0833,
+      "route_diff_rate": 0.497,
+      "improvement_rate_of_differ": 0.6297786720321932
+    },
+    {
+      "grade_margin_m": 0.0,
+      "high_grade_threshold": 0.12,
+      "route_diff_rate": 0.497,
+      "improvement_rate_of_differ": 0.6901408450704225
+    },
+    {
+      "grade_margin_m": 5.0,
+      "high_grade_threshold": 0.05,
+      "route_diff_rate": 0.497,
+      "improvement_rate_of_differ": 0.7022132796780685
+    },
+    {
+      "grade_margin_m": 5.0,
+      "high_grade_threshold": 0.0833,
+      "route_diff_rate": 0.497,
+      "improvement_rate_of_differ": 0.6338028169014085
+    },
+    {
+      "grade_margin_m": 5.0,
+      "high_grade_threshold": 0.12,
+      "route_diff_rate": 0.497,
+      "improvement_rate_of_differ": 0.6901408450704225
+    },
+    {
+      "grade_margin_m": 10.0,
+      "high_grade_threshold": 0.05,
+      "route_diff_rate": 0.497,
+      "improvement_rate_of_differ": 0.7062374245472837
+    },
+    {
+      "grade_margin_m": 10.0,
+      "high_grade_threshold": 0.0833,
+      "route_diff_rate": 0.497,
+      "improvement_rate_of_differ": 0.6458752515090543
+    },
+    {
+      "grade_margin_m": 10.0,
+      "high_grade_threshold": 0.12,
+      "route_diff_rate": 0.497,
+      "improvement_rate_of_differ": 0.6901408450704225
+    },
+    {
+      "grade_margin_m": 20.0,
+      "high_grade_threshold": 0.05,
+      "route_diff_rate": 0.497,
+      "improvement_rate_of_differ": 0.7002012072434608
+    },
+    {
+      "grade_margin_m": 20.0,
+      "high_grade_threshold": 0.0833,
+      "route_diff_rate": 0.497,
+      "improvement_rate_of_differ": 0.647887323943662
+    },
+    {
+      "grade_margin_m": 20.0,
+      "high_grade_threshold": 0.12,
+      "route_diff_rate": 0.497,
+      "improvement_rate_of_differ": 0.6901408450704225
+    }
+  ],
+  "landmarks": [
+    {
+      "name": "Praca Raul Soares",
+      "node": 8979229847,
+      "snap_m": 84.59312489718133
+    },
+    {
+      "name": "Hospital Mater Dei",
+      "node": 31899397,
+      "snap_m": 44.18760428683816
+    },
+    {
+      "name": "Praca da Assembleia",
+      "node": 60649417,
+      "snap_m": 13.463317360316786
+    },
+    {
+      "name": "Igreja de Lourdes",
+      "node": 2887596101,
+      "snap_m": 35.81276192689087
+    },
+    {
+      "name": "Av. do Contorno x Olegario Maciel",
+      "node": 6913922195,
+      "snap_m": 62.575651027759676
+    }
+  ]
+}

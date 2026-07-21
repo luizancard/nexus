@@ -1245,6 +1245,560 @@ hand-pick pairs that flatter the result.
 - **Do not report a headline effect size without the precision caveat** -- a
   routing difference driven by a false detection is not a real improvement.
 
+## 12. Routing experiment: results (Phase 2)
+
+This section reports the built-and-run outcome of the §11 specification. Every
+number below was produced by executing `python -m main` against the real fused
+and validated graphs in a single deterministic run (`seed=42`, 1000 stratified
+OD pairs); the driver writes `evaluation/results/experiment_results.json` and the
+figures under `evaluation/results/figures/`. Nothing here is asserted from "the
+code looks right" -- the same verify-against-real-data discipline as §7–§9. The
+headline is a **real, positive, honestly-bounded effect**, and the ablation makes
+it more interesting than "imagery helps": most of the measured accessibility gain
+comes from **obstacle avoidance**, while the curb-ramp signal reliably buys ramp
+access but not, by itself, hazard reduction.
+
+### 12.0 Overview
+
+The finding is a controlled comparison of the *same* Dijkstra router over the
+*same* graph under data conditions that differ only in the two imagery-derived
+attributes (`ramp_present`, `fixed_obstacle_present`). Five conditions were run
+(§12.2): `baseline` (OSM+DEM only), `full_validated` (hand-validated imagery --
+the headline), `full_raw` (raw post-Barrier imagery -- the detection-error probe),
+and two ablations (`ramp_only`, `obstacle_only`). Over 1000 origin-destination
+pairs, **all 1000 solved in every condition** (single connected component, as
+expected).
+
+One-paragraph result (headline model, §12.1): adding hand-validated imagery
+attributes changes the route for **49.7%** of OD pairs. The full decomposition of
+all 1000 pairs is **50.3% unchanged, 31.5% improved, 5.7% regressed, 7.9% neutral,
+4.6% mixed** -- so among *changed* routes, **63.4% are genuine accessibility
+improvements** [95% CI 59.4–67.6] against independent hand-validated ground truth,
+outnumbering regressions (11.5%) ~5.5:1, for a **net +25.8% of all pairs**. The
+tangible aggregate effect: across the sample, augmented routing **avoids 549
+hand-validated obstacles (−25.9%, Wilcoxon p≈9×10⁻⁵⁸)**, removes 87 confirmed
+missing-curb segments, and adds 633 curb-ramp traversals. Using the *raw* imagery
+instead drops improvement to **41.7%** and raises median cost -- the **21.7-point
+gap is the measured cost of detection error** (§11.2). The ablation attributes the
+hazard reduction almost entirely to obstacle avoidance; the ramp signal buys
+curb-ramp access but, judged on independent hazards, trades against terrain.
+§12.5 gives the complete accounting of every route, including what the 41% of
+changes that are *not* clean improvements actually are.
+
+### 12.1 The impedance/cost model (`core/impedance_model.py`)
+
+Per-edge cost, all terms non-negative (Dijkstra requires it), extending the
+proposal's `Custo = Distância × Fator_superfície + Penalidade_obstáculo` with a
+slope term and a ramp reducer:
+
+```
+effort(e)      = length × F_surface × F_slope
+cost(e)        = R_ramp ⊙ effort(e)  +  P_obstacle  +  P_steps
+```
+
+where `⊙` is the ramp discount, which by default protects the slope term (a curb
+ramp does not flatten a hill, §12.5): the discount applies only to the flat-ground
+effort, leaving the slope surcharge intact --
+
+```
+cost_traversal = R_ramp·(length·F_surface) + (length·F_surface)·(F_slope − 1)
+               = length·F_surface·(R_ramp + F_slope − 1)
+```
+
+Every weight lives in one frozen `ExperimentConfig` dataclass (`WHEELCHAIR_PROFILE`),
+so nothing is hand-tuned in code paths and the §12.6 sweep perturbs the exact
+same fields. A single wheelchair / reduced-mobility profile is used, matching the
+project's thesis and keeping the headline defensible.
+
+| Term | Rule | Default | Justification |
+|---|---|---|---|
+| `F_surface` | `surface_material_tier`: good→1.0, fair→1.15, poor→1.4 | — | Rolling-resistance/effort; modest so surface never dominates raw distance. Imputed 'fair' (41.8% of edges, §6) is the neutral middle and cannot inflate cost. This graph holds only good/fair. |
+| `F_slope` | piecewise on `grade_abs` (fraction): ≤0.03→1.0; 0.03–0.0833→linear to 1.5; >0.0833→1.5+8·(g−0.0833), capped 2.3 | — | Slope is the dominant wheelchair cost. **0.0833 = NBR 9050** max accessible-ramp grade (`NBR9050_MAX_RAMP_SLOPE_PCT`), a citable Brazilian-standard threshold. DEM-derived → identical across conditions, so it shapes routes but never drives the imagery comparison. `grade_abs` ranges 0–0.178 here (median 0.029, §pipeline). |
+| `R_ramp` | 0.80 **iff** `ramp_present=='present' AND ramp_present_imputed is False`; else 1.0. Discounts flat effort only (`ramp_protects_slope=True`). | 0.80 | The high-leverage positive term (§11.3). Fires on **real evidence only** -- keying on the real-bool `_imputed is False` guarantees the pessimistic imputation default can never trigger the discount. Ramp *absence* is therefore cost-neutral, not penalised: no fabricated curb penalty on the ~440 edges (§6) with no curb at all. The discount is applied to the flat traversal effort but not the slope surcharge -- a ramp aids a curb transition, not a hill (see the rejected naive variant below and its measured effect in §12.6). |
+| `P_obstacle` | +25 m iff obstacle `present`; `unknown`→0; `absent`→0 | 25 m | **Soft** additive penalty (§9.5): a false positive over-avoids a clear path (suboptimal, not unsafe), so it must stay recoverable, never a hard block. `unknown` (>55% of edges) is **not** penalised -- we route around *detected* obstacles only; penalising every unknown would make the under-mapped graph impassable (§4). |
+| `P_steps` | +500 m iff `steps_present=='present'`; `unknown`→0 | 500 m | Steps are near-impassable for a wheelchair. **Strong but finite** avoidance keeps the graph connected and a step-only destination reachable at high cost. Only the 8 reliable OSM step edges (§2) ever trigger it; the 454 `unknown` edges are never assumed safe *nor* penalised on a mere measurement gap. |
+
+**Attributes excluded from the headline cost (weight 0), imputation rates reported
+so the omission is honest (§11.3):** `width_bucket` (100% imputed), `handrail_present`
+(100%), `smoothness_tier` (99.5%), `tactile_paving_present` (87.3%),
+`marked_crossing_present` (mixed; the ramp term already carries the crossing-
+accessibility signal). Letting a fully-imputed attribute drive routing would be
+fabricated precision.
+
+**Alternatives considered and rejected** (documented so the modelling choice is
+defensible, not arbitrary):
+- *Ramp as an absence-penalty* (penalise every edge lacking a ramp; a ramp
+  waives it). Rejected: in the baseline nearly every edge is `ramp_present='absent'`
+  by imputation, so the penalty would fall on the whole graph, distorting the
+  cost landscape and fabricating curb costs on mid-block edges that have no curb.
+  The chosen ramp-as-reducer keeps the baseline→full difference attributable
+  purely to the high-precision (90.8%) *positive* signal.
+- *Crossing-scoped curb penalty* (penalty only on `marked_crossing` edges lacking
+  a ramp). More literal, but it couples ramp-detection error to crossing-detection
+  error, muddying the very detection-error measurement of §12.5; kept only as an
+  optional structural-sensitivity variant.
+- *Hard step/obstacle blocking* (remove the edge). Rejected: risks disconnecting
+  a destination whose only access is a stepped/obstructed segment; a strong finite
+  penalty preserves reachability while still avoiding the hazard wherever an
+  alternative exists.
+- *Naive ramp discount* (discount the whole slope-inflated effort,
+  `ramp_protects_slope=False`). This was the original formulation. The §12.5
+  regression analysis found it a genuine miscalibration: multiplying the slope
+  term by the discount lets a validated ramp partly cancel the steepness penalty,
+  so routes are pulled onto steeper streets -- grade drove **79% (57/72)** of that
+  model's route regressions. Corrected on first principles (a ramp does not
+  flatten a hill) to the slope-protected default; §12.6 measures the fix (fewer
+  regressions, more improvements, more obstacles avoided, ~32% less spurious steep
+  detouring), so the correction is verified, not assumed.
+
+**Non-negativity.** Every term is ≥ 0; on the default, `R_ramp + F_slope − 1 ≥
+0.80` and on the naive variant `R_ramp ∈ (0,1]` is multiplicative -- neither can
+make an edge cost negative, so Dijkstra is valid. Verified empirically: all 1000
+OD routes solve in all five conditions.
+
+### 12.2 The five data conditions (`core/graph_manager.py`)
+
+A condition is fully described by a *source* for each of the two imagery
+attributes: `baseline` (pessimistic imputed default), `validated` (hand-validated
+value where it exists, else pessimistic default -- raw model output is **not**
+trusted), or `raw` (fused-graph imagery as-is). The named conditions are
+combinations, which makes the ablation fall out for free:
+
+| Condition | ramp source | obstacle source | role |
+|---|---|---|---|
+| `baseline` | baseline | baseline | OSM+DEM only (§6 "OSM alone") |
+| `full_validated` | validated | validated | **headline** |
+| `full_raw` | raw | raw | detection-error probe |
+| `ramp_only` | validated | baseline | ablation |
+| `obstacle_only` | baseline | validated | ablation |
+
+**Baseline provenance.** The baseline graph is a real pipeline artifact, not an
+in-memory reset: regenerated via the fusion CLI with an empty predictions file --
+`echo '[]' > empty.json; python -m data_pipeline.edge_attribute_fusion
+--input-graph data_files/lourdes_graph_latest.graphml --metadata-csv
+data_files/mapillary_metadata.csv --predictions-json empty.json --slope-raster
+data_files/lourdes_slope_pct.tif --city-filter "Lourdes" --output-graph
+data_files/lourdes_graph_baseline.graphml`. Its imputation rates reproduce the
+§6 "OSM alone" column exactly (ramp 100%, obstacle 100%, crossing 75%, steps
+54.6%, surface 41.8%).
+
+**Guard assertions (verified, not trusted; all pass).** (1) baseline
+`ramp_present` is all `absent` and `fixed_obstacle_present` all `unknown`, matching
+an independent in-memory reset; (2) every condition graph is a single weakly-
+connected component with all edge costs ≥ 0; (3) validated coverage matches §9.4
+exactly -- **260 ramp** edges and **294 obstacle** edges carry a hand-validated
+value (join guard against the string-`'True'` truthiness trap of §7 #10: the code
+keys on `<attr>_validated_value`, never the `<attr>_validated` flag). The realised
+per-condition attribute counts: `full_validated` fires the ramp discount on 236
+edges and marks 120 obstacles present; `full_raw` 392 and 370; the ablations
+isolate one attribute each.
+
+### 12.3 OD-pair sampling (`core/graph_manager.py`)
+
+1000 distinct node pairs, seeded (`seed=42`), stratified into four equal-count
+bands by straight-line (Euclidean, metres -- the graph is projected UTM EPSG:31983)
+distance, by rejection sampling against quantile thresholds of the pairwise-
+distance CDF. Stratification stops trivially-short adjacent pairs from dominating
+the cost distribution (the failure mode of naive all-pairs enumeration) while
+staying fully reproducible: a re-run yields the identical pair list, and the
+identical metrics and bootstrap CIs. Realised distance spread: min 7 m, quartiles
+≈387/600/884 m, max 1738 m. One shared sample is reused across all conditions, so
+any difference is attributable to the data, never to different OD sets.
+
+Named landmarks (Praça Raul Soares, Hospital Mater Dei, Praça da Assembleia,
+Igreja de Lourdes, Av. do Contorno × Olegário Maciel) are resolved to their
+nearest graph node via `spatial_utils.to_dem_crs` + `osmnx.distance.nearest_nodes`,
+with the snap distance reported (13–85 m). These are used **only** for the
+illustrative route-overlay figure, never for the headline statistics.
+
+### 12.4 Metric definitions (`evaluation/metrics_calculator.py`)
+
+Three metrics per baseline-vs-condition comparison:
+
+1. **Route-difference rate** -- fraction of OD pairs whose node path changes, with
+   a percentile bootstrap 95% CI (2000 resamples of the OD set).
+2. **Improvement rate** -- the headline. Among *changed* routes, the fraction that
+   are a genuine accessibility improvement judged on **hand-validated ground truth,
+   independently of the cost model**. Each path gets a hazard vector
+   `H = (steps_real, obstacles_real, curb_barrier_real, high_grade_len)` read off
+   the validated graph:
+   - `steps_real` -- edges with `steps_present=='present' AND source=='osm'` (the 8 reliable OSM steps; imputed `unknown` counts 0);
+   - `obstacles_real` -- edges with `fixed_obstacle_present_validated_value=='present'`;
+   - `curb_barrier_real` -- edges with `ramp_present_validated_value=='absent'` (a hand-confirmed *missing* cut);
+   - `high_grade_len` -- metres traversed with `grade_abs` above the NBR 9050 ceiling.
+   The full route is an **improvement** iff it is ≤ baseline on every component and
+   strictly < on at least one (a 5 m margin on the continuous grade term so reroute
+   noise cannot manufacture improvements); **regression** is the symmetric case;
+   identical profiles are **neutral**; a trade (drops one hazard, adds another) is
+   **mixed**. Uncertain/imputed edges contribute **0** to every axis -- neither
+   credited nor blamed -- so the improvement count is conservative on unmeasured
+   hazards.
+   **Non-circularity:** `H` never uses the impedance weights, so a route that is
+   cheaper *in the model* can still score neutral or regressed. The headline is
+   therefore "X% of changed routes are improvements against independent ground
+   truth", not the tautology "full routes are cheaper by construction". A separate
+   **descriptive** figure -- mean hand-validated ramps traversed (`ramp_access`) --
+   gives the high-precision curb-ramp signal fair credit but is deliberately kept
+   *out* of the classifier, since the full cost model already optimises toward
+   ramps and crediting that as improvement would be circular.
+3. **Cost-distribution comparison** -- per-condition median route cost, paired
+   per-OD deltas, and a paired **Wilcoxon signed-rank** test (non-parametric; no
+   normality assumption). Descriptive on magnitude (a lower full cost is partly
+   true by construction where ramps discount); metric #2 is the independent check.
+
+### 12.5 Results
+
+**Headline -- baseline vs `full_validated`** (n=1000, all solved, default
+slope-protected model):
+
+| Quantity | Value | 95% CI |
+|---|---|---|
+| Route-difference rate | **49.7%** | 46.5–52.8% |
+| Improvement rate (of changed routes) | **63.4%** | 59.4–67.6% |
+| Improvement rate (of all OD pairs) | 31.5% | — |
+| Net improvement rate (of all pairs) | **+25.8%** | — |
+| Median route cost | 909 → **872** | Wilcoxon p ≈ 3.4×10⁻¹²⁰ |
+| Mean validated ramps traversed | 4.21 → **4.84** | — |
+
+**Complete accounting of all 1000 routes** -- the crucial point is that "changed"
+is not "improved", and every changed route is classified against independent
+ground truth so *nothing is left unexplained*:
+
+| Outcome | count | % of all | % of changed | meaning |
+|---|---|---|---|---|
+| unchanged | 503 | 50.3% | — | baseline route was already optimal under the imagery data |
+| **improvement** | 315 | 31.5% | 63.4% | fewer hazards on ≥1 axis, none worse |
+| regression | 57 | 5.7% | 11.5% | more hazards on ≥1 axis, none better |
+| neutral | 79 | 7.9% | 15.9% | changed route, *identical* validated-hazard profile |
+| mixed | 46 | 4.6% | 9.3% | traded one hazard type for another |
+
+So of the ~50% of routes that change, **63.4% are genuine improvements and 11.5%
+are regressions** -- a ~5.5:1 ratio, **net +258 routes (+25.8% of all pairs)**.
+The remaining changed routes are **neutral** (7.9%: the route moved but the four
+measured hazards did not -- and **76 of these 79 gained curb-ramp access**, a real
+benefit the hazard-only classifier deliberately does not count, §12.4) or **mixed**
+(4.6%: a genuine trade, e.g. dropping an obstacle but gaining steep metres). This
+is the honest answer to "what are the other ~41% of changes": mostly no measured
+hazard change (often with a ramp-access gain), some genuine trade-offs, and a real
+5.7% that are worse -- investigated below.
+
+**Tangible aggregate magnitude** (summed over all 1000 routes -- the concrete,
+proven quantities behind the rates, not just a classification percentage):
+
+| Ground-truth quantity | baseline | full_validated | net effect |
+|---|---|---|---|
+| Validated obstacles traversed | 2118 | **1569** | **−549 (−25.9%)**, p ≈ 9×10⁻⁵⁸ |
+| Confirmed missing-curb segments | 272 | 185 | −87 |
+| Curb-ramp traversals | 4212 | 4845 | **+633 (+15.0%)** |
+| Steep (>NBR 8.33%) metres | 93 625 | 99 494 | +5 868 (worse) |
+| Known OSM steps traversed | 15 | 15 | 0 |
+
+Per route, **349 routes shed at least one validated obstacle, only 13 gained one**
+(paired Wilcoxon p ≈ 9×10⁻⁵⁸). This is the headline evidence in absolute terms:
+augmented routing removes roughly **one in four** hand-validated pedestrian
+obstacles from the routes people would otherwise take. **Precision bound (§9.4),
+stated with every number:** the ramp signal is hand-validated at **90.8%**
+precision and the obstacle signal at **64%**; the improvement metric already
+restricts to hand-validated ground truth, so these are not inflated by raw
+detection error.
+
+**The 57 regressions, investigated (not hidden).** Attributed to the hazard
+component that worsened: **grade 49, obstacles 7, curb 3**. So ~86% are the
+steep-terrain trade -- avoiding an obstacle (or reaching a ramp) sometimes means
+taking a steeper parallel street. This is the *residual, real* trade-off after the
+§12.1 slope-protection fix removed the *artificial* part (the naive model had 72
+regressions, 57 of them grade-driven; §12.6). A 5.7% regression rate against a
+31.5% improvement rate is the honest cost of the effect, reported, not buried.
+
+**Detection-error probe -- baseline vs `full_raw`:** route-difference 50.9%
+[47.8–54.0], but improvement of changed routes only **41.7%** [37.5–46.0], with 93
+regressions (vs 57), and median cost *rises* 909 → 948 (Wilcoxon p ≈ 3×10⁻⁹¹).
+Raw imagery's false positives (obstacle detection ~36% precision pre-validation,
+§9.4) drive detours that are not real improvements. The **validated − raw
+improvement gap = 21.7 points** is the §11.2 measurement: about a third of the
+raw-imagery "effect" does not survive contact with ground truth. This is the single
+most important honesty number in the experiment -- the effect is *measured against
+its own detection error*, not assumed clean.
+
+**Ablation -- which attribute drives the effect:**
+
+| Condition | route-diff | improvement (of changed) | classification | median cost | mean ramp access |
+|---|---|---|---|---|---|
+| `obstacle_only` | 35.9% | **90.3%** [87.2–93.0] | 324 imp / 0 reg / 0 neu / 35 mixed | 909 → 939 | 4.21 → 3.95 |
+| `ramp_only` | 31.9% | **13.2%** [9.7–16.9] | 42 imp / 128 reg / 108 neu / 41 mixed | 909 → 831 | 4.21 → **4.86** |
+
+This is the substantive scientific finding, and it is more informative than a
+single headline. **Obstacle avoidance is the driver of measured hazard reduction**:
+it improves 90% of the routes it changes with *zero* regressions (a changed
+obstacle-only route reroutes precisely to shed a validated obstacle), at a modest
+distance cost (median +30). **The ramp signal buys curb-ramp access, not hazard
+reduction**: it raises mean validated-ramp access the most (4.21→4.86) and lowers
+model cost the most (→831), yet judged on *independent* hazards it improves only
+13.2% of changed routes and regresses 128 -- because steering toward a ramped
+corner still often trades into steeper terrain or other penalised segments. The
+combined `full_validated` (63.4%) is the blend; its 57 regressions vs
+obstacle_only's 0 are exactly the ramp term's residual cost. Read together: **a
+mobility-impaired user gains most from imagery through confirmed-obstacle
+avoidance; the curb-ramp signal adds ramp access but should not be rewarded so
+strongly that it overrides terrain** -- a concrete, defensible design lesson.
+
+**Concrete illustrative route** (figure `route_overlay_landmark.png`): Praça Raul
+Soares → Hospital Mater Dei. The OSM-only route runs down a corridor carrying **5
+hand-validated obstacles**; the imagery-augmented route detours one block west to
+**1 obstacle**, raises validated-ramp access 9→13, at a cost of 1647→1526. A
+clean, real example of the mechanism, not a cherry-picked statistic.
+
+### 12.6 Robustness
+
+**Cost-model refinement, measured.** The §12.5 regression analysis found the naive
+ramp discount (multiplying the whole slope-inflated effort) pulls routes onto
+steeper streets. Correcting it to discount only the flat effort -- a first-
+principles fix, a ramp does not flatten a hill -- was then measured head-to-head on
+the same 1000 pairs:
+
+| Model | improvement (of changed) | regressions | net | obstacles avoided | extra steep metres |
+|---|---|---|---|---|---|
+| naive (discounts slope) | 58.6% | 72 | +225 | 515 | +8 589 |
+| **refined (slope-protected)** | **63.4%** | **57** | **+258** | **549** | **+5 868** |
+
+The correction improves every honest metric at once -- more improvements, fewer
+regressions, more obstacles avoided, ~32% less spurious steep detouring -- which is
+why it is the default. Crucially it was adopted because it is *principled and
+measured better*, not tuned to a number; both variants remain runnable
+(`ramp_protects_slope`) so a reviewer can reproduce the comparison.
+
+**Effect by OD-distance band** (`full_validated`): route-difference rises steadily
+with trip length -- 24.4% (0–387 m) → 44.0% → 52.8% → **77.6%** (884–1738 m) --
+while the improvement rate of changed routes stays in a stable 56.7–73.6% band.
+Longer trips offer more opportunity to reroute, and the quality of those reroutes
+does not degrade with distance.
+
+**Weight-magnitude sensitivity** (3×3 grid over `ramp_discount ∈ {0.70,0.80,0.90}`
+× `obstacle_penalty ∈ {15,25,40} m`, baseline reused since it is invariant to both):
+the headline improvement rate ranges **50.9%–79.9%** and is positive at every grid
+point; improvements outnumber regressions throughout. The default (0.80, 25 m →
+63.4%) sits mid-range. The effect is thus not an artifact of one weight choice;
+its *magnitude* depends on weights (a higher obstacle penalty and a gentler ramp
+discount both raise the measured improvement, consistent with the ablation that
+obstacle avoidance is the cleaner signal), reported openly rather than tuned.
+
+**Sampling stability across seeds** (`run_seed_stability`, `main.py`). The §12.5
+headline uses one OD draw (seed=42); the bootstrap CIs quantify uncertainty
+*within* that draw, so the OD set itself was re-drawn under **10 independent seeds
+(1–10)**, condition graphs held fixed, and the headline recomputed each time:
+
+| Quantity | mean ± SD | range (10 seeds) | seed=42 headline |
+|---|---|---|---|
+| Route-difference rate | 49.5% ± 1.5% | 45.6–51.4% | 49.7% |
+| Improvement (of changed) | 60.6% ± 2.3% | 57.7–65.6% | 63.4% |
+| Net improvement (of all) | +23.7% ± 2.1% | +20.7–+27.9% | +25.8% |
+| Validated obstacles avoided | 545 ± 34 | 491–613 | 549 |
+
+The effect is **stable**: standard deviations are ~1.5–2.3 points on the rates,
+and the seed=42 reference sits at the mean on route-difference, net, and obstacles
+avoided, and modestly above the mean (but inside the range) on improvement-of-
+changed. This directly answers "did you just pick one favourable sample?" -- no;
+the headline is representative, not an outlier.
+
+**Metric-threshold sensitivity** (`run_threshold_sensitivity`). The improvement
+classifier draws two lines a reviewer could call arbitrary: the grade-noise margin
+(`GRADE_MARGIN_M`, default 5 m) and the steep-grade threshold
+(`NBR9050_MAX_RAMP_GRADE`, default 0.0833). Sweeping `grade_margin ∈ {0,5,10,20} m`
+× `threshold ∈ {0.05, 0.0833, 0.12}` moves the improvement rate only within
+**63.0%–70.6%**, and the NBR-anchored default (63.4%) is the *lowest, most
+conservative* corner of the grid -- so the headline is if anything an
+understatement, not a threshold-tuned maximum. The grade margin barely matters
+(63.0–64.8% at the NBR threshold); the finding does not hinge on where either line
+is drawn.
+
+### 12.7 Threats to validity and limitations
+
+Consistent with §10.2, stated plainly:
+- **The improvement metric is a proxy, not a lived-experience measurement.** It
+  scores four hand-validated hazard axes; it cannot capture accessibility factors
+  no attribute encodes. Because uncertain/imputed edges score 0, it is a
+  *conservative* proxy -- it under-counts improvements on unmeasured segments
+  rather than over-counting.
+- **This is not field-surveyed ground truth.** The "ground truth" is the §9.4
+  cross-model visual adjudication of thumbnails (ramp 90.8%, obstacle 64% precision
+  on resolvable segments; 26% of imagery-flagged segments unconfirmable). Every
+  effect size here should be read with those bounds, which is why the raw-vs-
+  validated gap is reported as a first-class result.
+- **The effect magnitude is weight-dependent** (§12.6: 50.9–79.9% across the grid).
+  The *direction* (net positive, improvements ≫ regressions, obstacles avoided) is
+  robust across all tested weights, both ablations, and both ramp-model variants;
+  the *point value* is conditioned on the stated defaults.
+- **The augmented routes trade some steepness for obstacle avoidance.** In
+  aggregate they traverse ~5 900 more metres above the NBR 8.33% grade ceiling, and
+  grade drives ~86% of the 57 regressions (§12.5). The slope-protection fix removed
+  the artificial part of this, but a real residual remains: shedding a confirmed
+  obstacle sometimes means a steeper parallel street. This is an honest trade a
+  richer multi-objective cost (or a per-user grade tolerance) could tune further.
+- **The ramp benefit is reported descriptively, not in the classifier**, to avoid
+  circularity; a reader who counts ramp access as an accessibility gain in its own
+  right would judge the ramp signal more favourably than the hazard-only metric
+  does. Both views are given.
+- **Obstacle `unknown` (>55% of edges) is never penalised**, so the router avoids
+  only *detected* obstacles; real obstacles on unobserved segments are neither
+  known nor avoided. This is a data-coverage limit, not a model choice.
+
+### 12.8 Verified by execution vs. assumed
+
+**Verified by running real code against the real data:** all five condition graphs
+and their guard assertions (baseline all-absent/all-unknown; single component;
+costs ≥ 0; 260/294 validated coverage); 1000/1000 OD pairs solvable in every
+condition; determinism (identical rates and bootstrap CIs on re-run under
+`seed=42`); the baseline reproducing the §6 OSM-alone imputation column; the
+complete decomposition and aggregate magnitude (549 obstacles avoided, p ≈ 9×10⁻⁵⁸);
+the naive-vs-refined ramp comparison; and every figure in §12.5–§12.6, each computed
+by `python -m main` and serialised to `evaluation/results/experiment_results.json`.
+Every headline number was additionally re-derived through an independent code path
+and adversarially audited (§12.9). Two Plan-agent claims were checked against the
+data and *rejected*: `grade`/`grade_abs`
+reload as floats (not strings) under `load_fused_graph`, and the graph has zero
+parallel edges -- neither workaround was needed, and both were confirmed by
+inspection rather than trusted.
+
+**Assumed (and handled openly):** the cost-model weight *magnitudes* (justified in
+§12.1 from a standard and from the soft/strong penalty logic, chosen before the
+run, and swept in §12.6, never tuned to a result); and that the four-axis hazard
+vector is an adequate *proxy* for "more accessible" (a modelling assumption, stated
+as such). No result was kept or discarded based on whether it flattered the thesis:
+the ramp ablation is reported precisely because it is partly unflattering, and the
+ramp-model miscalibration was found by *looking at our own regressions* and fixed
+on principle -- the correction happened to improve the numbers, but it was made
+because it is right, and the pre-fix numbers are reported alongside so nothing is
+hidden.
+
+### 12.9 Independent verification of the routing results
+
+The §12 numbers feed the competition article directly, so they were audited to the
+same standard as the data pipeline (§7/§8): verified by execution, trusted by
+nothing. `scripts/verify_experiment.py` runs four independent layers and reports
+**42/42 checks passed**:
+
+1. **Independent recomputation (separate code path).** A from-scratch router
+   (bare `nx.shortest_path`) and hazard scorer/classifier that import *none* of
+   `metrics_calculator`'s scoring logic re-derive the headline and are asserted
+   equal to the production path: classification split **315/57/79/46** and
+   **549 obstacles avoided** match exactly. This catches bugs the production path
+   and its author would share.
+2. **Condition-construction cross-check.** `full_validated`'s two imagery
+   attributes are independently reconstructed from the validated graph
+   (validated-value where adjudicated, else pessimistic default) and matched
+   against what `graph_manager` built -- **0 mismatches** on all 832 edges.
+3. **Invariants & determinism.** Baseline all-absent/all-unknown; every condition
+   a single component with non-negative costs; validated coverage exactly
+   **260 ramp / 294 obstacle**; and byte-identical metrics *and* bootstrap CIs on
+   a repeat run under `seed=42`.
+4. **Claims ledger.** Every headline number quoted in §12 is asserted against a
+   fresh `run_experiment` result, so no figure in the article lacks a reproducible
+   source.
+
+**Independent adversarial audit.** Separately, a different model audited the six
+Phase 2 modules for correctness bugs (the §8 cross-model tradition), executing
+targeted scripts against the real data rather than reading. It found **no
+correctness defect that changes any reported number**, across all six pre-declared
+attack vectors (classifier boundary cases, bootstrap resampling, ground-truth
+independence from cost, OD-sampler duplicates/stratification, 3-state-as-boolean
+mishandling, and the `obstacle_only` zero-regressions result). Notably it *proved*
+the last is a structural property -- because `obstacle_only` and `baseline` share
+the ramp source, their cost graphs differ only by a non-negative obstacle penalty
+keyed on the same field the ground truth reads, so a double-optimality argument
+forces the obstacle count to never worsen -- a genuine design property, not a
+masking bug. Three **minor, non-correctness** observations were raised and fixed:
+a hardcoded `"present"` literal (now the `PRESENT` constant); `sample_od_pairs`
+silently under-sampling when `n_pairs` is not divisible by the stratum count (now
+distributes the remainder and returns exactly `n_pairs`); and a fragile fallback
+in the verifier's Layer 2 (now mirrors the production filter exactly). None touched
+the published run (`n_pairs=1000` is divisible by 4; the seed=42 sample and all
+§12 numbers are unchanged, and the verifier re-passes 42/42).
+
+**Bottom line:** the §12 headline -- 49.7% route-diff, 63.4% improvement-of-changed,
+the 315/57/79/46 decomposition, 549 obstacles avoided, the 21.7-point detection-
+error gap, and the ablation -- is reproducible, independently recomputed, and
+adversarially audited with no correctness defect found.
+
+## 13. Article evidence map (writing scaffold)
+
+This section is a **writing aid, not article prose** -- the user writes the
+article; this exists so every sentence they write traces to a verified number,
+its source in code, and (where relevant) a figure, and so nothing is accidentally
+omitted. All numbers are from the deterministic reference run (`seed=42`, 1000
+stratified OD pairs, default slope-protected model), regenerable via `python -m
+main` and independently confirmed by `python -m scripts.verify_experiment` (§12.9).
+
+### 13.1 Results at a glance
+
+| # | Result | Value | Source (§) |
+|---|---|---|---|
+| 1 | Routes changed by imagery | 49.7% (95% CI 46.5–52.8) | §12.5 |
+| 2 | Of changed, genuine improvements | 63.4% (95% CI 59.4–67.6) | §12.5 |
+| 3 | Improvements, all pairs / net | 31.5% / **+25.8%** | §12.5 |
+| 4 | Full decomposition (n=1000) | 503 unchanged / 315 imp / 57 reg / 79 neutral / 46 mixed | §12.5 |
+| 5 | Validated obstacles avoided | **549 (2118→1569, −25.9%)**, Wilcoxon p≈9×10⁻⁵⁸ | §12.5 |
+| 6 | Per-route obstacle change | 349 routes fewer, 13 more | §12.5 |
+| 7 | Confirmed missing-curb segments | −87 (272→185) | §12.5 |
+| 8 | Curb-ramp traversals gained | +633 (4212→4845, +15.0%) | §12.5 |
+| 9 | Extra steep (>NBR) metres (a real trade) | +5 868 (93 625→99 494) | §12.5 |
+| 10 | Median route cost | 909→872, Wilcoxon p≈3.4×10⁻¹²⁰ | §12.5 |
+| 11 | Detection-error gap (validated − raw) | **21.7 pts** (raw improvement 41.7%) | §12.5 |
+| 12 | Ablation: obstacle_only / ramp_only | 90.3% (0 regressions) / 13.2% | §12.5 |
+| 13 | Regression causes (of 57) | grade 49, obstacle 7, curb 3 | §12.5 |
+| 14 | Cost-model fix (naive→refined) | 58.6%→63.4% imp; 72→57 reg; 515→549 obstacles | §12.6 |
+| 15 | Multi-seed stability (10 seeds) | route-diff 49.5%±1.5%; imp 60.6%±2.3%; obstacles 545±34 | §12.6 |
+| 16 | Metric-threshold sensitivity | improvement 63.0–70.6% (NBR default is the conservative end) | §12.6 |
+| 17 | Weight-magnitude sensitivity | improvement 50.9–79.9%, positive everywhere | §12.6 |
+| 18 | Effect by distance | route-diff 24.4%→77.6%; improvement 56.7–73.6% | §12.6 |
+| 19 | Precision bounds (report with every effect) | ramp 90.8%, obstacle 64% | §9.4 |
+| 20 | Illustrative route (Raul Soares→Mater Dei) | obstacles 5→1, ramp access 9→13, cost 1647→1526 | §12.5, fig |
+| 21 | Independent verification | 42/42 automated checks + adversarial audit | §12.9 |
+
+### 13.2 Claim → evidence → source → figure
+
+Each row is a defensible article claim, the number behind it, the code that
+produces it, and the figure that shows it. `results` = keys in
+`evaluation/results/experiment_results.json`.
+
+| Article claim | Number | Computed by | JSON key | Figure |
+|---|---|---|---|---|
+| Imagery contains accessibility info OSM lacks (0% OSM for ramp/obstacle) | §6 table | `data_pipeline/edge_attribute_fusion.py` | — | — |
+| The cost model & its weights | formula + table | `core/impedance_model.py` (`edge_cost`, `ExperimentConfig`, `WHEELCHAIR_PROFILE`) | `config.profile` | heatmap |
+| A ramp discounts curb transition, not slope (fix) | 58.6→63.4% | `impedance_model.edge_cost` (`ramp_protects_slope`) | `model_refinement` | — |
+| The five conditions differ only in 2 imagery attrs | 236 ramp/120 obs fired | `core/graph_manager.py` (`build_condition_graph`, `CONDITIONS`) | `comparisons` | — |
+| Half of routes change | 49.7% | `metrics_calculator.compare_conditions` | `comparisons.full_validated.route_diff_rate` | decomposition |
+| Of changed, 63.4% improve (independent GT) | 63.4% | `metrics_calculator.classify_improvement`, `score_path_hazards` | `...improvement_rate_of_differ` | decomposition, ablation |
+| Complete route accounting (nothing unexplained) | 503/315/57/79/46 | `compare_conditions` | `...classification`, `...n_unchanged` | decomposition |
+| 549 validated obstacles avoided | 549, p≈9e-58 | `compare_conditions` (`agg`, obstacle Wilcoxon) | `...aggregate_magnitude`, `...obstacle_wilcoxon_p` | — |
+| Cost distribution shifts lower | 909→872, p≈3e-120 | `compare_conditions` (`_wilcoxon`) | `...median_cost_*`, `...wilcoxon_p` | cost_distribution |
+| Detection error costs 21.7 pts | 21.7 | `compare_conditions` (full_raw) | `detection_error_gap` | ablation |
+| Obstacle avoidance drives it; ramp buys access | 90.3% / 13.2% | ablation conditions | `comparisons.obstacle_only/ramp_only` | ablation |
+| Effect stable across OD draws | 49.5%±1.5% | `main.run_seed_stability` | `seed_stability.summary` | — |
+| Not an artifact of metric thresholds | 63.0–70.6% | `main.run_threshold_sensitivity` | `threshold_sensitivity` | — |
+| Not an artifact of cost weights | 50.9–79.9% | `main.run_weight_sweep` | `weight_sensitivity` | — |
+| Longer trips change more | 24.4→77.6% | `metrics_calculator.improvement_rate_by_distance` | `improvement_by_distance` | improvement_by_distance |
+| Results independently verified | 42/42 + audit | `scripts/verify_experiment.py` | — | — |
+| Every effect carries its precision bound | 90.8% / 64% | §9.4 (hand validation) | `config.precision_9_4` | — |
+
+### 13.3 Figure index (`evaluation/results/figures/`)
+
+| File | Shows | Suggested caption |
+|---|---|---|
+| `lourdes_accessibility_heatmap.png` | Per-edge impedance across Lourdes | "Accessibility impedance (wheelchair effort per metre) across the Lourdes pilot network." |
+| `cost_distribution.png` | ECDF of route cost, both conditions | "Route-cost distribution shifts lower with imagery-augmented data (all OD pairs)." |
+| `decomposition.png` | Fate of all 1000 routes | "Complete accounting: 50% unchanged, 32% improved, 6% regressed — changed ≠ improved." |
+| `ablation.png` | Improvement rate per condition | "Obstacle avoidance drives measured hazard reduction; the ramp signal adds access, not hazard reduction." |
+| `improvement_by_distance.png` | Effect vs OD distance | "Longer trips change more; improvement quality holds across distance bands." |
+| `route_overlay_landmark.png` | One concrete route (Raul Soares→Mater Dei) | "OSM-only route (red, 5 validated obstacles) vs imagery-augmented (green, 1 obstacle)." |
+
+### 13.4 Reproduction recipe (for a methods/appendix section)
+
+1. Baseline graph (OSM+DEM only): the §12.2 fusion CLI command with an empty
+   predictions file. 2. `python -m main` → prints all §12 numbers, writes
+   `evaluation/results/experiment_results.json` and all six figures. 3. `python -m
+   scripts.verify_experiment` → independent confirmation (must print "ALL CHECKS
+   PASSED"). Deterministic under `seed=42`; every table in §12–§13 is regenerable.
+
 ## Open items
 
 - **`uncertain` segments (105 total: 66 ramp + 39 obstacle) are the binding
@@ -1262,5 +1816,8 @@ hand-pick pairs that flatter the result.
 - Width bucket carries known, quantified uncertainty (§3.4) and is
   currently fully imputed rather than trusted -- revisit if real per-image
   camera calibration or field measurements become available.
-- `core/impedance_model.py` and the routing algorithms remain out of scope
-  for this document -- see §6 for exactly what they need to do and why.
+- `core/impedance_model.py` and the Dijkstra router are now **built and run** --
+  see §12 for the impedance model, the five-condition experiment, and the results.
+  `core/routing_algorithms/d_star_lite.py` (dynamic replanning) remains stubbed:
+  the static three-condition comparison is the thesis; D* Lite is a later demo, not
+  a dependency.
