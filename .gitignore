@@ -28,3 +28,6 @@ cache/
 # detection-precision validation artifacts (downloaded imagery, rendered sheets)
 scripts/_precision_cache/
 scripts/_precision_sheets/
+
+# hand-curated validation ground truth (tracked, unlike generated data_files)
+!data_files/edge_validation_labels.json
