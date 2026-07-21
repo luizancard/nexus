@@ -884,9 +884,19 @@
   "note": "obstacle batch2 (best-detection)",
   "verdict": "absent"
  },
+ "28800987_29095458_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "present"
+ },
  "28800987_29095458_0|ramp_present": {
   "by": "fable-batch3",
   "note": "corner ramp w/ tactile",
+  "verdict": "present"
+ },
+ "28800988_28800996_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
   "verdict": "present"
  },
  "28800988_28800996_0|ramp_present": {
@@ -894,39 +904,94 @@
   "note": "driveway lowered curb",
   "verdict": "present"
  },
+ "28800988_36417186_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
+ },
  "28800988_36417186_0|ramp_present": {
   "by": "fable-batch3",
   "note": "driveway entrance ramp",
   "verdict": "present"
+ },
+ "28800996_28800997_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
  },
  "28800996_28800997_0|ramp_present": {
   "by": "fable-batch3",
   "note": "corner lowered curb",
   "verdict": "present"
  },
+ "28800996_8269807079_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "uncertain"
+ },
  "28800996_8269807079_0|ramp_present": {
   "by": "fable-batch3",
   "note": "dark road w/ motorcycle",
   "verdict": "uncertain"
+ },
+ "28800997_29095073_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
  },
  "28800997_29095073_0|ramp_present": {
   "by": "fable-batch3",
   "note": "gas-station forecourt lowered curb",
   "verdict": "present"
  },
+ "28801012_35968156_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
+ },
+ "28801012_35968157_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
+ },
+ "28801012_35968158_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
+ },
+ "28801013_28801014_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "uncertain"
+ },
  "28801013_28801014_0|ramp_present": {
   "by": "fable-batch3",
   "note": "dark road near pole",
   "verdict": "uncertain"
+ },
+ "28801013_324773873_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
  },
  "28801013_324773873_0|ramp_present": {
   "by": "fable-batch3",
   "note": "parking-entrance lowered curb",
   "verdict": "present"
  },
+ "28801013_35968155_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "uncertain"
+ },
  "28801013_35968155_0|ramp_present": {
   "by": "fable-batch3",
   "note": "corner curb w/ tree shadow",
+  "verdict": "present"
+ },
+ "28801013_8979229851_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
   "verdict": "present"
  },
  "28801013_8979229851_0|ramp_present": {
@@ -934,9 +999,24 @@
   "note": "corner ramp, person walking",
   "verdict": "present"
  },
+ "28801014_36417185_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "uncertain"
+ },
  "28801014_36417185_0|ramp_present": {
   "by": "fable-batch3",
   "note": "corner ramp at crosswalk",
+  "verdict": "present"
+ },
+ "28801014_36417189_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
+ },
+ "28801016_36417179_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
   "verdict": "present"
  },
  "28801016_36417179_0|ramp_present": {
@@ -944,9 +1024,19 @@
   "note": "corner/driveway ramp",
   "verdict": "present"
  },
+ "28801016_36417186_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
+ },
  "28801016_36417186_0|ramp_present": {
   "by": "fable-batch3",
   "note": "lowered curb at crossing",
+  "verdict": "present"
+ },
+ "28801016_8040950543_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
   "verdict": "present"
  },
  "28801016_8040950543_0|ramp_present": {
@@ -954,9 +1044,19 @@
   "note": "dark corner curb slope",
   "verdict": "present"
  },
+ "2887576701_2890440601_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
+ },
  "2887576701_2890440601_0|ramp_present": {
   "by": "fable-batch3",
   "note": "corner ramp near parking",
+  "verdict": "present"
+ },
+ "2887576701_29095398_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
   "verdict": "present"
  },
  "2887576701_29095398_0|ramp_present": {
@@ -964,9 +1064,19 @@
   "note": "corner ramp near crossing",
   "verdict": "present"
  },
+ "2887596101_29095398_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "uncertain"
+ },
  "2887596101_29095398_0|ramp_present": {
   "by": "fable-batch3",
   "note": "dark corner road",
+  "verdict": "uncertain"
+ },
+ "2887596101_2918622402_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
   "verdict": "uncertain"
  },
  "2887596101_2918622402_0|ramp_present": {
@@ -974,29 +1084,59 @@
   "note": "rough pavement near crossing",
   "verdict": "uncertain"
  },
+ "2890440601_60649414_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
+ },
  "2890440601_60649414_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
   "verdict": "present"
+ },
+ "2890440901_29096580_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
  },
  "2890440901_29096580_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
   "verdict": "present"
  },
+ "29095042_29096247_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
+ },
  "29095042_29096247_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
   "verdict": "present"
+ },
+ "29095042_29096287_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "uncertain"
  },
  "29095042_29096287_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
   "verdict": "present"
  },
+ "29095042_29096573_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "uncertain"
+ },
  "29095042_29096573_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
+  "verdict": "present"
+ },
+ "29095042_29096609_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
   "verdict": "present"
  },
  "29095042_29096609_0|ramp_present": {
@@ -1004,9 +1144,24 @@
   "note": "ramp batch4 (best-detection)",
   "verdict": "present"
  },
+ "29095073_8923282733_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
+ },
+ "29095074_29096191_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
+ },
  "29095074_29096191_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
+  "verdict": "uncertain"
+ },
+ "29095074_29096573_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
   "verdict": "uncertain"
  },
  "29095074_29096573_0|ramp_present": {
@@ -1014,19 +1169,44 @@
   "note": "ramp batch4 (best-detection)",
   "verdict": "present"
  },
+ "29095398_36417198_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "present"
+ },
  "29095398_36417198_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
   "verdict": "present"
+ },
+ "29095458_8040946400_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
  },
  "29095458_8040946400_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
   "verdict": "uncertain"
  },
+ "29095458_8040950547_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
+ },
  "29095458_8040950547_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
+  "verdict": "present"
+ },
+ "29095780_36417196_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "uncertain"
+ },
+ "29096146_8979229867_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
   "verdict": "present"
  },
  "29096146_8979229867_0|ramp_present": {
@@ -1034,9 +1214,19 @@
   "note": "ramp batch4 (best-detection)",
   "verdict": "uncertain"
  },
+ "29096167_29096247_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
+ },
  "29096167_29096247_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
+  "verdict": "present"
+ },
+ "29096167_8996907542_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
   "verdict": "present"
  },
  "29096167_8996907542_0|ramp_present": {
@@ -1044,9 +1234,19 @@
   "note": "ramp batch4 (best-detection)",
   "verdict": "uncertain"
  },
+ "29096167_8996907561_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
+ },
  "29096167_8996907561_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
+  "verdict": "present"
+ },
+ "29096167_9389686256_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
   "verdict": "present"
  },
  "29096167_9389686256_0|ramp_present": {
@@ -1054,25 +1254,50 @@
   "note": "ramp batch4 (best-detection)",
   "verdict": "present"
  },
+ "29096247_8278346183_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "uncertain"
+ },
  "29096247_8278346183_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
   "verdict": "present"
+ },
+ "29096247_8920624349_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "uncertain"
  },
  "29096247_8920624349_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
   "verdict": "present"
  },
+ "29096287_36417207_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
+ },
  "29096287_36417207_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
   "verdict": "present"
  },
+ "29096573_31899385_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
+ },
  "29096573_31899385_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
   "verdict": "uncertain"
+ },
+ "29096580_29096742_0|fixed_obstacle_present": {
+  "by": "fable-ob-b3",
+  "note": "obstacle batch3 (best-detection)",
+  "verdict": "absent"
  },
  "29096580_29096742_0|ramp_present": {
   "by": "fable-batch4",
@@ -1089,9 +1314,19 @@
   "note": "ramp batch4 (best-detection)",
   "verdict": "uncertain"
  },
+ "29096609_36417205_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "uncertain"
+ },
  "29096609_36417205_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
+  "verdict": "present"
+ },
+ "29096609_8920624348_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
   "verdict": "present"
  },
  "29096609_8920624348_0|ramp_present": {
@@ -1099,9 +1334,19 @@
   "note": "ramp batch4 (best-detection)",
   "verdict": "present"
  },
+ "29096742_35968156_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "uncertain"
+ },
  "29096742_35968156_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
+  "verdict": "present"
+ },
+ "29096742_8979229854_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
   "verdict": "present"
  },
  "29096742_8979229854_0|ramp_present": {
@@ -1114,40 +1359,85 @@
   "note": "ramp batch4 (best-detection)",
   "verdict": "uncertain"
  },
+ "29096783_8040950547_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
+ },
  "29096783_8040950547_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
   "verdict": "uncertain"
+ },
+ "29096783_8979229835_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
  },
  "29096783_8979229835_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
   "verdict": "present"
  },
+ "29096811_36417184_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
+ },
  "29096811_36417184_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
   "verdict": "present"
+ },
+ "2918622402_2918622601_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "uncertain"
  },
  "2918622402_2918622601_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
   "verdict": "present"
  },
+ "2918622403_2918622601_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "uncertain"
+ },
+ "2918622403_35968147_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
+ },
  "2918622403_35968147_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
   "verdict": "uncertain"
+ },
+ "2918622501_2941234598_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
  },
  "2918622501_2941234598_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
   "verdict": "present"
  },
+ "2918622501_35968129_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
+ },
  "2918622501_35968129_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
   "verdict": "uncertain"
+ },
+ "2918622601_8942040579_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
  },
  "2918622601_8942040579_0|ramp_present": {
   "by": "fable-batch4",
@@ -1157,6 +1447,11 @@
  "2941234598_8936532813_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
+  "verdict": "uncertain"
+ },
+ "2941234701_60649416_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
   "verdict": "uncertain"
  },
  "2941234701_60649416_0|ramp_present": {
@@ -1174,6 +1469,11 @@
   "note": "ramp batch4 (best-detection)",
   "verdict": "present"
  },
+ "31899385_31899387_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "present"
+ },
  "31899385_31899387_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
@@ -1189,19 +1489,39 @@
   "note": "ramp batch4 (best-detection)",
   "verdict": "present"
  },
+ "31899397_9389641957_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
+ },
  "31899397_9389641957_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
   "verdict": "present"
+ },
+ "31899401_320407480_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
  },
  "31899401_320407480_0|ramp_present": {
   "by": "fable-batch4",
   "note": "ramp batch4 (best-detection)",
   "verdict": "uncertain"
  },
+ "324498070_35968149_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "present"
+ },
  "324498070_35968149_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
+  "verdict": "present"
+ },
+ "324498070_60649416_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
   "verdict": "present"
  },
  "324498070_60649416_0|ramp_present": {
@@ -1209,24 +1529,54 @@
   "note": "ramp batch5 (best-detection)",
   "verdict": "uncertain"
  },
+ "324498070_8936532813_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "present"
+ },
  "324498070_8936532813_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
+ },
+ "35968129_35968149_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
  },
  "35968129_35968149_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "absent"
  },
+ "35968148_36417188_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "present"
+ },
  "35968148_36417188_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
  },
+ "35968148_36417191_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
+ },
  "35968148_36417191_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
+  "verdict": "present"
+ },
+ "35968152_35968155_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "present"
+ },
+ "35968152_9451512620_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
   "verdict": "present"
  },
  "35968152_9451512620_0|ramp_present": {
@@ -1234,59 +1584,139 @@
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
  },
+ "35968155_9451512621_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "uncertain"
+ },
  "35968155_9451512621_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
+ },
+ "35968157_35968158_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "present"
+ },
+ "35968157_9451512621_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
  },
  "35968157_9451512621_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
  },
+ "35968158_35968160_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
+ },
  "35968158_35968160_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
+ },
+ "35968159_50923643_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
  },
  "35968159_50923643_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
  },
+ "36417179_36417186_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
+ },
  "36417179_36417186_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
+ },
+ "36417179_5406180062_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "uncertain"
  },
  "36417179_5406180062_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "uncertain"
  },
+ "36417182_36417184_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
+ },
  "36417182_36417184_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
+ },
+ "36417185_36417189_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
+ },
+ "36417188_36417191_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
  },
  "36417188_36417191_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "uncertain"
  },
+ "36417191_36417194_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
+ },
  "36417191_36417194_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "uncertain"
+ },
+ "36417192_36417193_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
+ },
+ "36417193_36417194_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
+ },
+ "36417193_36417196_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
  },
  "36417193_36417196_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
  },
+ "36417193_8914825427_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
+ },
  "36417193_8914825427_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
+  "verdict": "uncertain"
+ },
+ "36417196_8914825434_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
   "verdict": "uncertain"
  },
  "36417196_8914825434_0|ramp_present": {
@@ -1294,20 +1724,40 @@
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
  },
+ "36417205_36417207_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
+ },
  "36417205_36417207_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
+ },
+ "36417206_36417207_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "absent"
  },
  "36417206_36417207_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
  },
+ "41416512_41416519_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "present"
+ },
  "41416512_41416519_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "uncertain"
+ },
+ "41416512_50923643_0|fixed_obstacle_present": {
+  "by": "fable-ob-b4",
+  "note": "obstacle batch4 (best-detection)",
+  "verdict": "present"
  },
  "41416512_50923643_0|ramp_present": {
   "by": "fable-batch5",
@@ -1319,14 +1769,29 @@
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
  },
+ "60649397_8878144070_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
+  "verdict": "present"
+ },
  "60649397_8878144070_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "uncertain"
  },
+ "60649416_60649417_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
+  "verdict": "present"
+ },
  "60649416_60649417_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
+  "verdict": "present"
+ },
+ "60649417_8996907581_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
   "verdict": "present"
  },
  "60649417_8996907581_0|ramp_present": {
@@ -1334,24 +1799,64 @@
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
  },
+ "6906811868_993654857_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
+  "verdict": "absent"
+ },
  "6913922194_6913922195_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
+ },
+ "8040946400_8923282733_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
+  "verdict": "absent"
+ },
+ "8040950543_8040950547_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
+  "verdict": "absent"
  },
  "8040950543_8040950547_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "uncertain"
  },
+ "8040950551_8979229835_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
+  "verdict": "absent"
+ },
  "8040950551_8979229835_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "uncertain"
  },
+ "8269807083_8914832491_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
+  "verdict": "absent"
+ },
+ "8914825434_9451512627_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
+  "verdict": "absent"
+ },
  "8914825434_9451512627_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
+  "verdict": "absent"
+ },
+ "8920624348_8920624349_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
+  "verdict": "absent"
+ },
+ "8923330994_8923330996_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
   "verdict": "absent"
  },
  "8923330994_8923330996_0|ramp_present": {
@@ -1359,10 +1864,20 @@
   "note": "ramp batch5 (best-detection)",
   "verdict": "uncertain"
  },
+ "8923330994_8923330998_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
+  "verdict": "absent"
+ },
  "8923330994_8923330998_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
+ },
+ "8979229847_8979229851_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
+  "verdict": "absent"
  },
  "8979229847_8979229851_0|ramp_present": {
   "by": "fable-batch5",
@@ -1374,9 +1889,19 @@
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
  },
+ "8979229867_9389686266_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
+  "verdict": "uncertain"
+ },
  "8979229867_9389686266_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
+  "verdict": "present"
+ },
+ "8996879785_8996879786_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
   "verdict": "present"
  },
  "8996879785_8996879786_0|ramp_present": {
@@ -1394,6 +1919,11 @@
   "note": "ramp batch5 (best-detection)",
   "verdict": "uncertain"
  },
+ "8996907544_9389686252_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
+  "verdict": "absent"
+ },
  "8996907561_8996907564_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
@@ -1404,25 +1934,60 @@
   "note": "ramp batch5 (best-detection)",
   "verdict": "uncertain"
  },
+ "9388545619_9388545620_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
+  "verdict": "present"
+ },
  "9388545619_9388545620_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
+ },
+ "9388545619_9455911112_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
+  "verdict": "absent"
  },
  "9388545619_9455911112_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
  },
+ "9389641962_9389641967_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
+  "verdict": "absent"
+ },
+ "9389686247_9389686261_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
+  "verdict": "uncertain"
+ },
  "9389686247_9389686261_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "uncertain"
  },
+ "9389686256_9389686267_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
+  "verdict": "absent"
+ },
  "9389686256_9389686267_0|ramp_present": {
   "by": "fable-batch5",
   "note": "ramp batch5 (best-detection)",
   "verdict": "present"
+ },
+ "9451512618_9451512619_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
+  "verdict": "absent"
+ },
+ "9451512620_9451512621_0|fixed_obstacle_present": {
+  "by": "fable-ob-b5",
+  "note": "obstacle batch5 (best-detection)",
+  "verdict": "absent"
  },
  "9451512620_9451512621_0|ramp_present": {
   "by": "fable-batch5",

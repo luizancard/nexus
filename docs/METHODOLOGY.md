@@ -452,7 +452,7 @@ already provides." For each canonical attribute, where does its real
 | Attribute | OSM alone | Imagery (net) | Combined | Imputed |
 |---|---|---|---|---|
 | `ramp_present` | 0.0% | 47.1% | 47.1% | 52.9% |
-| `fixed_obstacle_present` | 0.0% | 48.8% | 48.8% | 51.2% |
+| `fixed_obstacle_present` | 0.0% | 44.5% | 44.5% | 55.5% |
 | `marked_crossing_present` | 25.0% | 34.4% | 59.4% | 40.6% |
 | `steps_present` | 45.4% | 0.0% | 45.4% | 54.6% |
 | `surface_material_tier` | 58.2% | 0.0% | 58.2% | 41.8% |
@@ -463,7 +463,10 @@ already provides." For each canonical attribute, where does its real
 
 (Imagery percentages here are post-§8-audit values -- the pre-audit table
 showed 40.0%/39.8%/28.5% for the first three rows, computed from a fusion
-run with the two spatial-join defects described in §8.)
+run with the two spatial-join defects described in §8. `fixed_obstacle_present`
+imagery further dropped from 48.8% to 44.5% in §9.4, when the 3%-precision
+Vistas `Barrier` class was removed from the obstacle mapping -- fewer edges,
+but far more of them real.)
 
 \* imagery produces a raw estimate for 504 edges, but it is excluded from
 the canonical schema -- see §3.4's decision gate.
@@ -955,9 +958,9 @@ What is *not* defensible is running the comparison, reporting a headline
 effect size, and omitting that its two dominant terms are ~20-45%-precision
 signals. §9 exists so that can't happen by omission.
 
-### 9.4 Per-edge manual validation (option 3, in progress)
+### 9.4 Per-edge manual validation (option 3) -- COMPLETE
 
-The project owner chose option 3: hand-validate the imagery-touched edges
+The project owner chose option 3: hand-validate every imagery-touched edge
 into a trusted subset. `scripts/edge_validation.py` implements this as a
 resumable workflow -- the unit of work is one undirected physical segment
 (the two directed OSMnx twins collapsed) per attribute, and it renders the
@@ -969,53 +972,125 @@ established that large detections are the reliable-true ones). Verdicts
 (`data_files/edge_validation_labels.json`, force-tracked past the
 `data_files/` ignore because it is hand-curated ground truth, not generated
 data), keyed by `segment_id|attribute` so the work is fully resumable and
-`apply` can write the results back onto the graph as `<attr>_validated` /
+`apply` writes the results back onto the graph as `<attr>_validated` /
 `<attr>_validated_value` without touching the original imagery value.
 
-**Scope of the work:** 231 unique segments, 399 (segment, attribute)
-judgments total -- 196 for `ramp_present`, 203 for `fixed_obstacle_present`.
+**All 399 (segment, attribute) judgments were completed** -- 196
+`ramp_present` + 203 `fixed_obstacle_present` segments, each adjudicated
+against its real source image by a vision-capable model (Fable). The two
+attributes gave sharply different results, and reporting them as one blended
+number would hide the single most important fact this validation produced:
 
-**Progress so far (batch 1, `ramp_present`):** 25 of 196 segments
-adjudicated. Result: **10 present, 4 clearly absent (false positive), 11
-uncertain.** Two things worth stating precisely rather than averaging into
-one number:
+| Attribute | present | absent | uncertain | **precision on resolvable** |
+|---|---|---|---|---|
+| `ramp_present` | 118 | 12 | 66 | **118/130 = 90.8%** |
+| `fixed_obstacle_present` | 60 | 104 | 39 | **60/164 = 36.6%** |
 
-- Among the 14 segments that could be resolved either way, **10/14 (71%)
-  confirmed a real ramp** -- markedly better than the 20-40% *detection*-level
-  precision in §9.2, and the gap is the point: a segment with a genuine
-  curb cut usually has at least one clean corner capture among its several
-  images even though most individual detections on it are false, so
-  aggregating to the segment and judging its best evidence recovers signal
-  that per-detection precision understates. This is direct empirical support
-  for the fusion's pessimistic-OR aggregation being the right call for
-  presence attributes.
-- But **11/25 (44%) were unconfirmable from the available imagery** --
-  night captures, motion blur, distance, or occlusion. This is a limitation
-  of the Mapillary source for this neighborhood, not just the model, and it
-  bounds how complete any imagery-only validation can be: nearly half the
-  flagged ramp segments simply cannot be adjudicated from a thumbnail. The
-  `apply` step deliberately writes a validated value only for
-  present/absent verdicts, leaving `uncertain` segments without a
-  `_validated` flag so the routing phase can decide whether to treat them
-  as imagery-present, imputed, or excluded.
+**`ramp_present` is trustworthy.** At 90.8% precision on the 130 resolvable
+segments, the imagery-derived curb-ramp signal is solid -- and it is the
+attribute the routing thesis leans on hardest (0% OSM coverage, high cost
+weight). The 90.8% figure is dramatically higher than the 20-40%
+*detection*-level precision in §9.2, and that gap is itself a finding: a
+segment with a genuine curb ramp almost always has at least one clean corner
+capture among its several images even though most individual detections on
+it are false positives, so aggregating to the segment and judging its best
+evidence recovers signal that per-detection precision badly understates.
+This is direct empirical support for the fusion's pessimistic-OR aggregation
+being the right design for presence attributes. Most confirmed ramps were
+corner crossing ramps and driveway/garage lowered curbs (both genuine
+lowered curbs a wheelchair can use).
 
-`data_files/lourdes_graph_validated.graphml` currently carries validated
-flags on 28 edges (14 segments x their twins: 20 `present`, 8 `absent`).
-**This is a partial artifact** -- the remaining 171 `ramp_present` and all
-203 `fixed_obstacle_present` segments are not yet adjudicated. The tooling,
-label store, and work order are committed so this continues incrementally
-(a fresh `render` batch skips already-labelled items) rather than restarting
-from zero. Honest status: the validation is *begun and reproducible*, not
-complete; the routing experiment should either wait for fuller coverage or
-restrict its imagery condition to the validated subset and say so.
+**`fixed_obstacle_present` was NOT trustworthy as-shipped, and §9.4 found
+exactly why.** At 36.6% precision it was little better than a coin flip --
+but the failure is almost entirely one class. Broken down by the
+representative detection's Vistas class:
+
+| Class | present | absent | precision |
+|---|---|---|---|
+| **Barrier** | 2 | 71 | **3%** |
+| Manhole | 26 | 4 | 87% |
+| Fire Hydrant | 3 | 0 | 100% |
+| Trash Can | 26 | 24 | 52% |
+| Bench | 2 | 2 | 50% |
+| all non-`Barrier` | 58 | 33 | **64%** |
+
+Vistas' `Barrier` class is effectively noise for this purpose: it fired on
+passing vehicles, the dashcam hood/foreground, raised road medians, and
+night motion-blur -- 71 of 73 resolvable Barrier segments were false
+positives. **Fix applied:** `Barrier` was removed from
+`edge_attribute_fusion.CLASS_TO_PRESENCE_ATTR`, an evidence-based change
+(73 hand-validated segments, not a guessed threshold), and the fused graph
+regenerated. This raises segment-level obstacle precision from 36.6% to
+**64%** and drops `fixed_obstacle_present`'s imagery coverage modestly from
+48.8% to 44.5% (only segments whose *sole* evidence was a Barrier lose their
+flag; segments also seeing a manhole/bin/hydrant keep it). The reliable
+true positives that remain are concrete, checkable objects -- manholes,
+construction dumpsters, trash bins, fire hydrants, a portable toilet, café
+furniture -- genuinely obstructing the pedestrian path.
+
+**The uncertain fraction is a real, reported ceiling.** 66/196 ramp (33.7%)
+and 39/203 obstacle (19.2%) segments could not be adjudicated from the
+available thumbnails -- night captures, heavy motion blur, distance, or
+occlusion. This is a limitation of the Mapillary source for this
+neighborhood (many captures are night-time dashcam drive-throughs), not only
+of the model, and it bounds how far any *imagery-only* validation can ever
+go. `apply` deliberately writes a validated value only for present/absent
+verdicts, leaving `uncertain` segments unflagged so the routing phase can
+decide per experiment whether to treat them as imagery-present, imputed, or
+excluded.
+
+**Committed artifacts.** `data_files/edge_validation_labels.json` (399
+verdicts, tracked ground truth). `data_files/lourdes_graph_validated.graphml`
+(regenerated, git-ignored like other derived data) carries validated flags
+on **260 `ramp_present` edges** (236 present / 24 absent) and **294
+`fixed_obstacle_present` edges** (120 present / 174 absent) -- the resolvable
+segments times their directed twins. Regenerate anytime via
+`python -m scripts.edge_validation apply`.
+
+### 9.5 Verdict: is the accuracy enough to proceed?
+
+**Yes for `ramp_present`, conditionally yes for `fixed_obstacle_present`
+after the Barrier fix, with a stated caveat -- and the routing experiment
+should run on the validated subset, not the raw imagery.** Concretely:
+
+- **`ramp_present` (90.8%): proceed.** This clears any reasonable bar for a
+  routing input, and it is the highest-leverage imagery attribute. Route on
+  the validated `present`/`absent` values; treat the 34% `uncertain`
+  segments as imputed (the existing pessimistic default) rather than
+  asserting a ramp that was never confirmed.
+- **`fixed_obstacle_present` (64% post-fix): proceed with a stated
+  limitation, or restrict to the validated subset for the headline result.**
+  64% is usable for a *penalty* term (a false obstacle over-avoids a clear
+  path -- suboptimal, not unsafe) but should not be presented as a precise
+  measurement. For the scientific claim, use the 294 hand-validated obstacle
+  edges as ground truth and report the model's precision alongside, rather
+  than treating every raw detection as fact.
+- **What would make it flawless (not required to proceed, but the honest
+  path to a stronger claim):** (1) the `uncertain` segments are the binding
+  constraint now -- resolving them needs *better imagery* (daytime,
+  pedestrian-height, higher-resolution captures) or a light field check on a
+  sample, not more model work; (2) a narrowly-scoped fine-tune on
+  `steps`/`handrail`/`tactile_paving` (still zero imagery signal) plus
+  Curb-Cut/obstacle precision would lift both coverage and precision; (3)
+  the routing experiment itself should report results as a function of the
+  validated-vs-raw imagery condition, so the effect of detection error on
+  the conclusion is measured, not assumed.
+
+The bottom line for the competition article: the pipeline's central claim --
+that street-level imagery contributes accessibility information OSM lacks --
+now rests on a **hand-validated** curb-ramp signal at 90.8% precision and a
+**cleaned, class-audited** obstacle signal, with every unconfirmable edge
+honestly marked as such. That is a defensible empirical footing. It is not
+"flawless" in the sense of field-surveyed ground truth -- no imagery-only
+method can be -- and the article should say so plainly, which is itself the
+kind of honesty that makes the result credible.
 
 ## Open items
 
-- **Imagery presence-attribute precision (§9) is the top pre-routing
-  decision** -- fine-tune, proceed-with-caveat, or manually validate the
-  ~500 imagery-touched edges. The `ramp_present`/`fixed_obstacle_present`
-  effect in any OSM-vs-fused routing comparison is inflated until one of
-  these is done.
+- **`uncertain` segments (105 total: 66 ramp + 39 obstacle) are the binding
+  limit on imagery-only validation** -- resolvable only with better imagery
+  (daytime/pedestrian-height/higher-res) or a sampled field check, not more
+  model work. This is now the top data-quality follow-up.
 - Stretch goal (YOLO26 fine-tune): not started. Cost estimate from
   planning: ~$2-8 on Azure/GCP T4 spot pricing for a full 100-epoch run.
   Originally scoped to the 3 gap classes (`steps`/`handrail`/

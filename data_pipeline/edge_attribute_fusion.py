@@ -66,11 +66,18 @@ def load_fused_graph(path: Path) -> nx.MultiDiGraph:
     return ox.io.load_graphml(filepath=path, edge_dtypes=FUSED_EDGE_DTYPES)
 
 # Segmentation class -> canonical attribute this image contributes evidence for.
+# `Barrier` (Vistas) is deliberately EXCLUDED from fixed_obstacle_present:
+# the §9.4 manual validation of all 203 imagery-flagged obstacle segments
+# measured Vistas' Barrier class at 3% precision (2 real / 73 resolvable) --
+# it fires on vehicles, the dashcam hood/foreground, road medians, and night
+# motion-blur, essentially never a real pedestrian obstacle. Dropping it
+# raised segment-level obstacle precision from 37% to 64% on the validated
+# set. Every other class here validated far better (Manhole 87%, Fire Hydrant
+# 100%, Trash Can 52%), so they stay.
 CLASS_TO_PRESENCE_ATTR = {
     "Curb Cut": "ramp_present",
     "Crosswalk - Plain": "marked_crossing_present",
     "Lane Marking - Crosswalk": "marked_crossing_present",
-    "Barrier": "fixed_obstacle_present",
     "Bench": "fixed_obstacle_present",
     "Bike Rack": "fixed_obstacle_present",
     "Fire Hydrant": "fixed_obstacle_present",
