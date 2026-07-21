@@ -1085,6 +1085,166 @@ honestly marked as such. That is a defensible empirical footing. It is not
 method can be -- and the article should say so plainly, which is itself the
 kind of honesty that makes the result credible.
 
+## 10. Writing the scientific article: defensible claims and mandatory caveats
+
+Consolidated guidance for the person writing the 32º Prêmio Jovem Cientista
+article, so the paper claims neither too much nor too little. Every item
+here traces to a number computed from real data elsewhere in this document.
+
+### 10.1 Claims the data supports -- state these with confidence
+
+- **Street-level imagery contributes accessibility information that OSM does
+  not have, in this under-mapped neighborhood.** `ramp_present` and
+  `fixed_obstacle_present` both have **0% OSM coverage**; without imagery
+  they would not exist for any edge in Lourdes (§6). This is the central,
+  defensible thesis.
+- **The curb-ramp signal is hand-validated at 90.8% precision** on 130
+  resolvable segments (§9.4) -- not asserted from model output, but checked
+  against the real source photographs one segment at a time.
+- **The obstacle signal, after a data-driven class audit, is ~64%
+  precision** on reliable object classes (manhole, fire hydrant, trash bin,
+  dumpster); the one systematically bad class (Vistas `Barrier`, 3%
+  precision) was identified and removed with evidence, not intuition (§9.4).
+- **Every quantified claim in this document was independently recomputed
+  from the real data across three audit passes** (§7, §8), two of them by a
+  different model. Several real bugs were caught, fixed, and re-verified --
+  the pipeline is not trusted by construction.
+
+### 10.2 Limitations you MUST state -- omitting these is the "slop" failure
+
+- **This is NOT field-surveyed ground truth, and no imagery-only method can
+  be.** State this explicitly. **105 of 399 imagery-flagged segments (26%)
+  are genuinely unconfirmable** from the available Mapillary imagery --
+  night-time dashcam captures, motion blur, distance, occlusion. They are
+  honestly marked `uncertain` and never asserted as fact. This is a
+  limitation of the **data source**, not the model or the method; more model
+  work cannot fix it. Putting this *in the paper* is what separates a
+  credible result from one that merely looks rigorous.
+- **The precision figures come from a vision-model adjudication (Claude
+  Fable) of single monocular thumbnails, not a surveyor with a tape
+  measure.** Good enough to flag and rank accessibility features; not a
+  calibrated physical measurement. Say so.
+- **`width_bucket` is fully imputed** -- a systematic camera-FOV bias makes
+  the raw estimate untrustworthy (§3.4), so it carries zero real signal in
+  the delivered graph. `handrail`, `tactile_paving`, and `steps` have zero
+  imagery signal at all (no Vistas class); `steps` has a reliable but
+  partial OSM signal (8 edges, §2).
+- **The Mapillary tile-density / coverage findings are this project's own
+  testing, not documented API behavior** (§3.1), and the raw-fetch counts
+  are not re-verifiable from the committed data. Present them as observed,
+  not as general claims.
+- **The routing effect size is still unmeasured** until the §11 experiment
+  runs. A modest or null result, honestly measured, is still a valid finding.
+
+### 10.3 The single most important framing
+
+The credibility of this project does not come from the numbers being
+perfect -- they are not, and the paper should not pretend otherwise. It
+comes from **every uncertainty being measured and reported rather than
+hidden**: the 26% unconfirmable fraction, the per-class precision, the
+imputed attributes, the caught-and-fixed bugs. Report those *as findings*.
+An honestly-bounded accessibility map is a genuine contribution to a
+literature that usually assumes crowdsourced data is either complete or
+uniformly sparse; a map that overclaims precision it cannot defend is not.
+
+## 11. Routing experiment specification (for the next phase)
+
+The next session builds `core/impedance_model.py` and the routing
+algorithms and runs the OSM-vs-imagery comparison. This section specifies
+that experiment so it produces a defensible scientific finding, not merely a
+router that runs. **This is a specification, not an implementation -- the
+router is deliberately still out of scope for the data-pipeline phase.**
+Hand this section (plus §6, §9.4, §9.5) to whoever builds the routing phase.
+
+### 11.1 The two conditions being compared
+
+The finding is a *controlled comparison of the same router over the same
+graph* under two data conditions:
+
+- **Baseline (OSM + DEM only):** cost graph built from OSM tags + slope
+  alone, no imagery. Reproducible today: run the fusion CLI with an empty
+  predictions file (`echo '[]' > empty.json`), already verified to produce
+  exactly the "OSM alone" column of §6.
+- **Full (fused):** the delivered fused graph, imagery included.
+
+### 11.2 Ground truth: route on the validated subset, not raw model output
+
+For the **headline** result, the two imagery-only presence attributes should
+take their **hand-validated** values (§9.4), not raw model output:
+
+- `ramp_present`: 260 validated edges (236 `present` / 24 `absent`) in
+  `lourdes_graph_validated.graphml` (`ramp_present_validated_value`).
+- `fixed_obstacle_present`: 294 validated edges (120 `present` / 174
+  `absent`).
+- The 105 `uncertain` segments carry no validated flag -- treat them as
+  **imputed** (the existing pessimistic default: `absent` for ramp as
+  infrastructure, `unknown` for obstacle as hazard). Do not assert a feature
+  that was never confirmed.
+
+Then run a **secondary** condition using the raw (post-Barrier) imagery
+values, and report both. The gap between "validated" and "raw imagery"
+routing outcomes *is* the measurement of how much detection error changes
+the conclusion -- that is the number that makes the result honest instead of
+assumed.
+
+### 11.3 How each attribute should feed the cost model
+
+Cost formula (from the proposal): `Custo = Distância × Fator_superfície +
+Penalidade_obstáculo`, plus a slope/grade term from the DEM.
+
+- `ramp_present` (trustworthy, 90.8%): the high-leverage positive term --
+  a validated curb ramp should *reduce* the cost of a curb transition /
+  enable a crossing. This is where imagery earns its place.
+- `fixed_obstacle_present` (64% post-fix, or use validated): an **obstacle
+  penalty**. A false positive here over-avoids a clear path -- suboptimal
+  but not unsafe -- so a penalty (not a hard block) is the right treatment.
+  **`Barrier` is already excluded at the data level (§9.4); the router must
+  not re-introduce any Barrier-derived obstacle.**
+- `steps_present` (hazard, 3-state): `unknown` must stay `unknown` -- never
+  silently route someone into a staircase. The 8 OSM-derived steps edges are
+  reliable (§2) and should carry a strong penalty or hard avoidance for
+  wheelchair profiles.
+- `surface_material_tier` and slope/grade: cost multipliers (`Fator_superfície`
+  and the topographic term).
+- `width_bucket`, `smoothness_tier`, `handrail_present`, `tactile_paving_present`:
+  mostly or fully imputed -- include them if the cost model wants them, but
+  do not let a fully-imputed attribute dominate a route decision, and report
+  their imputation rate (§4, §6) so their weight is honest.
+
+### 11.4 Metrics -- the actual scientific output
+
+Over a sample of origin-destination (OD) pairs across Lourdes, compute in
+both conditions:
+
+1. **What fraction of routes differ** between baseline and full.
+2. **Among differing routes, how many avoid a real (validated) obstacle or a
+   steeper ramp** the OSM-only route would have taken -- i.e. is the
+   difference an *improvement* for a mobility-impaired user, not just a
+   change.
+3. **How the estimated cost distributions compare** between conditions.
+
+Report the §9.4 precision numbers alongside every result, so a reader sees
+the detection-error bound on the effect, not just the point estimate.
+
+### 11.5 OD-pair sampling
+
+Use real, stated OD pairs -- e.g. key origins (a metro station, a hospital,
+a plaza) to a spread of destinations, or a random sample of node pairs
+stratified by straight-line distance. State the sampling rule; do not
+hand-pick pairs that flatter the result.
+
+### 11.6 Traps this audit already found -- do not re-introduce them
+
+- **Load the fused graph with `edge_attribute_fusion.load_fused_graph`, never
+  `carregar_grafo`** -- the latter leaves every `_imputed`/validated flag as
+  the string `'False'`, which is truthy, silently inverting them (§7 #10).
+- **`steps_present` and `fixed_obstacle_present` are 3-state, not boolean.**
+  A two-branch `if present / else` treats `unknown` as safe -- the exact
+  failure §4 exists to prevent. Over half the graph is `unknown` on these.
+- **Do not re-add `Barrier` as an obstacle source** (§9.4).
+- **Do not report a headline effect size without the precision caveat** -- a
+  routing difference driven by a false detection is not a real improvement.
+
 ## Open items
 
 - **`uncertain` segments (105 total: 66 ramp + 39 obstacle) are the binding
